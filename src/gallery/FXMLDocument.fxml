@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.CheckMenuItem?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioMenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.input.KeyCodeCombination?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane id="AnchorPane" fx:id="root" prefHeight="718.0" prefWidth="916.0" style="-fx-background-color: #4B5567;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gallery.FXMLDocumentController">
+    <children>
+      <HBox alignment="CENTER_RIGHT" focusTraversable="true" layoutX="67.0" layoutY="50.0" prefHeight="29.0" prefWidth="850.0" spacing="15.0" AnchorPane.leftAnchor="67.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="50.0">
+         <children>
+              <Label fx:id="title" alignment="TOP_CENTER" minHeight="16" minWidth="69" prefHeight="29.0" prefWidth="703.0" textAlignment="CENTER" textFill="#0a65bf">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="elements" prefHeight="26.0" prefWidth="89.0" text="Elements:" textFill="WHITE" />
+            <Label fx:id="items_count" alignment="CENTER" contentDisplay="TOP" prefHeight="26.0" prefWidth="53.0" />
+         </children>
+      </HBox>
+      <HBox alignment="CENTER" layoutY="464.0" prefHeight="45.0" prefWidth="757.0" spacing="20.0" AnchorPane.bottomAnchor="139.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+         <children>
+            <ComboBox fx:id="folders" prefHeight="26.0" prefWidth="168.0" promptText="Favorite dirs" />
+            <ComboBox fx:id="rotate" prefWidth="150.0" promptText="Rotate" />
+            <Label fx:id="size" prefHeight="22.0" prefWidth="55.0" textFill="#0447f1" />
+            <Label text="\%" textFill="WHITE" />
+            <ChoiceBox fx:id="defaults" prefWidth="150.0" />
+         </children>
+      </HBox>
+      <ScrollPane fx:id="scroll" fitToHeight="true" fitToWidth="true" layoutX="74.0" layoutY="120.0" prefHeight="411.0" prefWidth="810.0" AnchorPane.bottomAnchor="187.0" AnchorPane.leftAnchor="74.0" AnchorPane.rightAnchor="68.0" AnchorPane.topAnchor="120.0">
+         <content>
+            <BorderPane fx:id="border" cache="true" cacheHint="QUALITY" prefHeight="409.0" prefWidth="807.0">
+               <center>
+                  <ImageView fx:id="image_view" cache="true" cacheHint="QUALITY" fitHeight="310.0" fitWidth="293.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER" />
+               </center>
+            </BorderPane>
+         </content>
+      </ScrollPane>
+      <ListView fx:id="image_list" cacheHint="QUALITY" layoutY="576.0" orientation="HORIZONTAL" prefHeight="113.0" prefWidth="916.0" AnchorPane.bottomAnchor="29.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+         <contextMenu>
+            <ContextMenu fx:id="context" />
+         </contextMenu></ListView>
+      <MenuBar fx:id="menu_bar" prefHeight="29.0" prefWidth="757.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="0.0">
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+                  <MenuItem fx:id="open_file" mnemonicParsing="false" text="Open..." />
+                  <MenuItem fx:id="open" mnemonicParsing="false" text="Open with..." />
+                  <MenuItem fx:id="remove" mnemonicParsing="false" text="Delete" />
+                  <RadioMenuItem fx:id="rename" mnemonicParsing="false" text="Rename" />
+              <MenuItem fx:id="close" mnemonicParsing="false" text="Close">
+                     <accelerator>
+                        <KeyCodeCombination alt="DOWN" code="F4" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator></MenuItem>
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Edit">
+            <items>
+                  <MenuItem fx:id="save" mnemonicParsing="false" text="Save folder">
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="F5" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator></MenuItem>
+              <MenuItem fx:id="delete" mnemonicParsing="false" text="Delete folder">
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="F6" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator></MenuItem>
+            </items>
+          </Menu>
+            <Menu mnemonicParsing="false" text="View">
+              <items>
+                <MenuItem fx:id="fullscreen" mnemonicParsing="false" text="Fullscreen" />
+                  <MenuItem fx:id="reset" mnemonicParsing="false" text="Reset">
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="R" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator></MenuItem>
+              </items>
+            </Menu>
+            <Menu mnemonicParsing="false" text="Sorting options">
+               <items>
+                  <CheckMenuItem fx:id="ext" mnemonicParsing="false" text="Keyword">
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="K" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator></CheckMenuItem>
+                  <CheckMenuItem fx:id="owner" mnemonicParsing="false" text="Owner">
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="O" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator></CheckMenuItem>
+                  <CheckMenuItem fx:id="date" mnemonicParsing="false" text="Find by date">
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="D" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator></CheckMenuItem>
+               </items>
+            </Menu>
+          <Menu mnemonicParsing="false" text="Help">
+            <items>
+              <MenuItem fx:id="about" mnemonicParsing="false" text="About" />
+                  <MenuItem fx:id="codes" mnemonicParsing="false" text="Error codes" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+      <Label fx:id="menu_label" alignment="CENTER" contentDisplay="CENTER" layoutX="14.0" layoutY="48.0" prefHeight="29.0" prefWidth="43.0" visible="false" />
+      <Label fx:id="prev_lbl" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" layoutX="1.0" layoutY="122.0" maxHeight="408.0" maxWidth="70.0" minHeight="-Infinity" minWidth="-Infinity" opacity="0.6" prefHeight="408.0" prefWidth="70.0" text="Label" AnchorPane.leftAnchor="0.0" />
+      <Pane fx:id="pane" layoutX="-200.0" prefHeight="718.0" prefWidth="200.0" style="-fx-background-color: #328BDB;">
+         <children>
+            <ListView fx:id="information" layoutX="-3.0" layoutY="71.0" prefHeight="128.0" prefWidth="200.0" />
+         </children>
+      </Pane>
+      <Label fx:id="next_lbl" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" layoutX="846.0" layoutY="122.0" maxHeight="408.0" maxWidth="70.0" minHeight="-Infinity" minWidth="-Infinity" opacity="0.6" prefHeight="408.0" prefWidth="70.0" AnchorPane.rightAnchor="0.0" />
+      <Label alignment="CENTER" layoutX="-4.0" layoutY="690.0" prefHeight="29.0" prefWidth="923.0" style="-fx-background-color: #328BDB;" text="Joanne - proudly designed for Linux" textFill="WHITE" AnchorPane.leftAnchor="-4.0" AnchorPane.rightAnchor="-3.0" AnchorPane.topAnchor="690.0" />
+    </children>
+</AnchorPane>
