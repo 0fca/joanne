@@ -8,6 +8,7 @@ package gallery;
 import com.sun.javafx.scene.control.skin.ListViewSkin;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 import gallery.image.ImageManager;
+import gallery.xml.XMLManager;
 import java.awt.AWTException;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
@@ -38,7 +39,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.ResourceBundle;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,7 +59,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
@@ -107,8 +106,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     @FXML
     private ComboBox folders;
     @FXML
-    private ChoiceBox defaults;
-    @FXML
     private MenuItem reset,delete,about,fullscreen,save,close,rename,remove,open,open_file,codes;
     @FXML
     private CheckMenuItem ext,owner,date;
@@ -148,6 +145,8 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private String OWNER = System.getProperty("user.name");
     private String DATE = "";
     private String KEYWORD = ".png";
+    private static XMLManager XML = XMLManager.getInstance();
+    
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -232,55 +231,36 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             }
         });
 
+        image_view.setOnMouseClicked(event ->{
+            int count = event.getClickCount();
+            
+            if(count == 2){
+                fullscreen.fire();
+            }
+        });
+        
         close.setOnAction(event ->{
             System.exit(0);
         });
         
         save.setOnAction((event) ->{
-           
+            ArrayList<String> list = new ArrayList<>();
+            XMLManager xml = new XMLManager();
+            
+            folders.getItems().forEach(x ->{
+                list.add(x.toString());
+            });
+            
             try {
-                Properties p = new Properties();
-                String pa = "";
-                if(new File(pa).isFile()){
-                    pa = new File(pa).getParent();
-                }
-                if(Files.exists(new File("folders.xml").toPath())){
-                FileInputStream in = new FileInputStream(new File("folders.xml"));
-                p.loadFromXML(in);
-                BiConsumer<Object,Object> bi = (x,y) ->{
-                    p.getProperty(x.toString(), new File(y.toString()).getName());
-                };
-                p.forEach(bi);
-
-                }
-                FileOutputStream f = new FileOutputStream(new File("folders.xml"));
-                if(!p.containsKey(pa)){
-                p.setProperty(new File(pa).getAbsolutePath(),new File(pa).getName());
-                }else{
-                    a.setAlertType(AlertType.ERROR);
-                    a.setHeaderText("Adding folder.");
-                    a.setContentText("You have already added this folder!");
-                    a.showAndWait();
-                }
-                p.storeToXML(f,null);
-                ObservableList<String> s = folders.getItems();
-                s.add(0, new File(pa).getName());
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
-                 a.setAlertType(AlertType.ERROR);
-                       a.setTitle("Rename");
-                       a.setHeaderText("Error while renaming the file.");
-                       a.setContentText("Error code: "+e.getErrorInfo(ex)+"\n"+e.getErrorMessage(ex));
-                       a.showAndWait();
+                xml.saveFoldersList(list);
             } catch (IOException ex) {
-                Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
-                a.setAlertType(AlertType.ERROR);
-                       a.setTitle("Rename");
-                       a.setHeaderText("Error while renaming the file.");
-                       a.setContentText("Error code: "+e.getErrorInfo(ex)+"\n"+e.getErrorMessage(ex));
-                       a.showAndWait();
+               a.setAlertType(Alert.AlertType.ERROR);
+               a.setTitle("Rename");
+               a.setHeaderText("Error while renaming the file.");
+               a.setContentText("Error code: "+e.getErrorInfo(ex)+"\n"+e.getErrorMessage(ex));
+               a.showAndWait();
+               Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
             }
-           
         });
         
         folders.setOnAction((event) ->{
@@ -300,48 +280,38 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         });
         
         fullscreen.setOnAction((event) ->{
-            if(selection != -1){
             Stage stage2 = (Stage) root.getScene().getWindow();
      
             if(stage2.isFullScreen()){
-                size.setText(String.valueOf(100));
+                size.setText(String.valueOf(100.0));
                 model_man.resize();
                 stage2.setFullScreen(false);
-                
             }else{
-                
                 model_man.resize();
                 stage2.setFullScreen(true); 
-            }
             }
         });
        
        
         
-        defaults.setOnAction(event ->{
-            String name = defaults.getSelectionModel().getSelectedItem().toString().toLowerCase()+".jpg";
-            Image i = new Image(FXMLDocumentController.class.getResourceAsStream("images/"+name));
-            Stage s = (Stage)root.getScene().getWindow();
-            
-            if(!s.isFullScreen()){
-                image_view.setFitHeight(border.getPrefWidth());
-                image_view.setFitWidth(border.getPrefHeight());
-            }else{
-                image_view.setFitHeight(0);
-                image_view.setFitWidth(0);
-                
-            }
-            image_view.setImage(i);
-            selection = -1;
-            image_list.setItems(FXCollections.observableArrayList());
-            title.setText(defaults.getSelectionModel().getSelectedItem().toString());
-        });
+//        defaults.setOnAction(event ->{
+//            String name = defaults.getSelectionModel().getSelectedItem().toString().toLowerCase()+".jpg";
+//            Image i = new Image(FXMLDocumentController.class.getResourceAsStream("images/"+name));
+//            Stage s = (Stage)root.getScene().getWindow();
+//            
+//            image_view.setFitHeight(Y);
+//            image_view.setFitWidth(X);
+//            image_view.setImage(i);
+//            selection = -1;
+//            image_list.setItems(FXCollections.observableArrayList());
+//            title.setText(defaults.getSelectionModel().getSelectedItem().toString());
+//        });
 
        
         about.setOnAction(event ->{
             a.setAlertType(AlertType.INFORMATION);
-            a.setHeaderText("Susanne");
-            a.setContentText("Susanne\nAuthor: Obsidiam\nver:"+ver.selectAndGetVersion(0)+"\nLicense:GNU GPL v.3.0\n");
+            a.setHeaderText("Joanne");
+            a.setContentText("Joanne\nAuthor: Obsidiam\nver:"+ver.selectAndGetVersion(0)+"\nLicense:GNU GPL v.3.0\n");
             a.showAndWait();
         });
         
@@ -469,6 +439,15 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                 }
             }
             event.consume();
+        });
+        
+        root.setOnMouseMoved(event ->{
+           double y = event.getSceneY();
+           if(y < 100){
+               animateFrontPanelMove(false);
+           }else{
+               animateFrontPanelMove(true);
+           }
         });
         
         image_view.setOnMouseEntered(event -> {
@@ -829,7 +808,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         ObservableList items = FXCollections.observableArrayList();
         items.add("Jeżyk");
         items.add("Para");
-        defaults.setItems(items);
+        //defaults.setItems(items);
         image_list.setCellFactory(new CallbackImpl());
         System.gc();
         bw.append("Defaults and list prepared.");
@@ -858,134 +837,25 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         
         
         
-          scroll.setPannable(true);
-          scroll.addEventFilter(ScrollEvent.ANY, (ScrollEvent event) -> {
-              if (event.getDeltaY() > 0) {
-                  zoom.set(zoom.get() * 1.1);
-              } else if (event.getDeltaY() < 0) {
-                  zoom.set(zoom.get() / 1.1);
-              }
-              event.consume();
+        scroll.setPannable(true);
+        
+        scroll.addEventFilter(ScrollEvent.ANY, (ScrollEvent event) -> {
+          if (event.getDeltaY() > 0) {
+              zoom.set(zoom.get() * 1.1);
+          } else if (event.getDeltaY() < 0) {
+              zoom.set(zoom.get() / 1.1);
+          }
+          event.consume();
         }); 
-        animateFrontPanelMove();
+        scroll.setOnMouseClicked(event ->{
+            int count = event.getClickCount();
+            
+            if(count == 2){
+                fullscreen.fire();
+            }
+        });
     }  
-        
-    private void createFavoritesList() throws FileNotFoundException, IOException{
-        ObservableList o = image_list.getSelectionModel().getSelectedIndices();
-       
-        
-       if(!Files.exists(new File(System.getProperty("user.home")+File.separatorChar+"favorites.xml").toPath())){
-           FileOutputStream f = new FileOutputStream(new File(System.getProperty("user.home")+File.separatorChar+"favorites.xml"));
-           Properties p = new Properties();
-           
-          o.forEach(x ->{
-              System.out.print(x);
-              try{
-               if(folders.getSelectionModel().getSelectedItem() != null){
-                
-                   System.out.print(o);
-                   p.setProperty(folders.getSelectionModel().getSelectedItem().toString()+"-"+new File(images.get(Integer.parseInt(x.toString()))).getName(), images.get(Integer.parseInt(x.toString())));
-
-               }else{
-                   File file = new File(images.get(Integer.parseInt(x.toString())));
-                   p.setProperty("NoName-"+new File(ACTUAL_SELECTED).getName(), file.getAbsolutePath());
-               }
-               System.out.print(new File(images.get(Integer.parseInt(x.toString()))).getName());
-               p.storeToXML(f, null);
-               f.flush();
-               f.close();
-              }catch(NumberFormatException | IOException ex){
-
-              }
-          });
-       }else{
-           FileInputStream fin = new FileInputStream(new File(System.getProperty("user.home")+File.separatorChar+"favorites.xml"));
-           
-           Properties p = new Properties();
-           
-           p.loadFromXML(fin);
-           o.forEach(x1 ->{
-               try{
-                   if(!p.containsValue(images.get(Integer.parseInt(x1.toString())))){
-                   if(folders.getSelectionModel().getSelectedItem() != null){
-                        p.setProperty(new File(ACTUAL_SELECTED).getName()+"-"+new File(images.get(Integer.parseInt(x1.toString()))).getName(), images.get(Integer.parseInt(x1.toString())));
-                   }else{
-                       File file = new File(ACTUAL_SELECTED);
-                       if(file.isFile()){
-                        p.setProperty("NoName-"+new File(ACTUAL_SELECTED).getName(), ACTUAL_SELECTED);
-                       }
-                   }
-                   }else{
-                       a.setAlertType(AlertType.ERROR);
-                       a.setTitle(String.valueOf(AlertType.ERROR));
-                       a.setHeaderText("Error while adding the item.");
-                       a.setContentText("Item has been already added.");
-                       a.showAndWait();
-                   }
-                   fin.close();
-
-               }catch(NumberFormatException | IOException ex){
-                   
-               }
-               System.out.print(new File(images.get(Integer.parseInt(x1.toString()))).getName());
-           });
-           FileOutputStream f = new FileOutputStream(new File(System.getProperty("user.home")+File.separatorChar+"favorites.xml"));
-           p.storeToXML(f, null);
-           f.flush();
-           f.close();
-       }
-    }
-
-    private void removeFromFavorites() throws FileNotFoundException, IOException{
-       ObservableList o = image_list.getSelectionModel().getSelectedIndices();
-       try{
-       if(Files.exists(new File("favorites.xml").toPath())){
-           FileInputStream fin = new FileInputStream(new File("favorites.xml"));
-           
-           Properties p = new Properties();
-           
-           p.loadFromXML(fin);
-           o.forEach(x1 ->{
-               try{
-                   if(p.containsValue(images.get(Integer.parseInt(x1.toString())))){
-                   if(folders.getSelectionModel().getSelectedItem() != null){            
-                        p.remove(new File(ACTUAL_SELECTED).getName()+"-"+new File(images.get(Integer.parseInt(x1.toString()))).getName(), images.get(Integer.parseInt(x1.toString())));
-
-                   }else{
-                       File file = new File(ACTUAL_SELECTED);
-                       if(file.isFile()){
-                        p.remove("NoName-"+new File(ACTUAL_SELECTED).getName(), ACTUAL_SELECTED);
-                       }
-                   }
-                   }else{
-                       a.setAlertType(AlertType.ERROR);
-                       a.setTitle(String.valueOf(AlertType.ERROR));
-                       a.setHeaderText("Error while removing the item.");
-                       a.setContentText("Item has been never added.");
-                       a.showAndWait();
-                   }
-                   fin.close();
-
-                   FileOutputStream f = new FileOutputStream(new File("favorites.xml"));
-                   p.storeToXML(f, null);
-                   f.flush();
-                   f.close();
-               }catch(NumberFormatException | IOException ex){
-                   
-               }
-               System.out.print(new File(images.get(Integer.parseInt(x1.toString()))).getName());
-           });
-       }else{
-          a.setAlertType(AlertType.ERROR);
-          a.setTitle("Error");
-          a.setHeaderText("Error while searching for a file.");
-          a.setContentText("The file: favorites.xml cannot be found.");
-          a.showAndWait();
-       }
-       }finally{
-           model_man.addFavoritesToList();
-       }
-    }
+      
 
     private void animatePanelMove() {
         TranslateTransition openNav = new TranslateTransition(new Duration(350), pane);
@@ -1000,13 +870,13 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         }
     }
     
-    private void animateFrontPanelMove() {
+    private void animateFrontPanelMove(boolean isFarAway) {
         TranslateTransition openNav = new TranslateTransition(new Duration(350), front_panel);
-        openNav.setToY(front_panel.getHeight());
+        openNav.setToY(-front_panel.getHeight());
         TranslateTransition closeNav = new TranslateTransition(new Duration(350), front_panel);
+        closeNav.setToY(0.0);
         
-        if(front_panel.getTranslateY() > 0){
-            closeNav.setToY(-(front_panel.getHeight()));
+        if(!isFarAway){
             closeNav.play();
         }else{
             openNav.play();
@@ -1155,7 +1025,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                     listFromTable();
                 }
             break;
-            
+            //case for ascend/descend date sorting...
         }
         }
     }
@@ -1260,7 +1130,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         System.gc();
     }
         
-        private void prepareContextItems(){
+    private void prepareContextItems(){
             
         image_list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         MenuItem i = new MenuItem("Load favorites...");
@@ -1273,11 +1143,12 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             } 
         });
         
-        
         MenuItem i2 = new MenuItem("Add to favorites...");
         i2.setOnAction(event ->{
              try {
-                 createFavoritesList();
+                 ObservableList o = image_list.getSelectionModel().getSelectedIndices();
+                 Object selected = folders.getSelectionModel().getSelectedItem();
+                 XML.createFavoritesList(o,selected,ACTUAL_SELECTED,images);
                  
              }catch(IOException e){
                  Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, e);
@@ -1287,7 +1158,25 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         MenuItem i4 = new MenuItem("Remove from favorites...");
         i4.setOnAction(event ->{
             try {
-                removeFromFavorites();
+                ObservableList o = image_list.getSelectionModel().getSelectedIndices();
+                Object selected = folders.getSelectionModel().getSelectedItem();
+                try{
+                boolean isDone = XML.removeFromFavorites(o,selected,ACTUAL_SELECTED,images);
+                if(isDone){
+                   a.setAlertType(AlertType.INFORMATION);
+                   a.setTitle("Removing");
+                   a.setContentText("All items has been removed from favorties.");
+                   a.setHeaderText("Removing successful");
+                }else{
+                   a.setAlertType(AlertType.ERROR);
+                   a.setTitle("Removing");
+                   a.setContentText("An error occured while removing items.");
+                   a.setHeaderText("Removing unsuccessful."); 
+                }
+                a.showAndWait();
+                }finally{
+                    model_man.addFavoritesToList();
+                }
             } catch (IOException ex) {
                 Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -1309,7 +1198,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         context.getItems().add(i4);
         
         System.gc();
-       }
+    }
         
         private int getIndex(){
             ListViewSkin<?> ts = (ListViewSkin<?>) image_list.getSkin();
@@ -1334,7 +1223,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if(e.getButton() == 1){
-                    trayIcon.displayMessage("Susanne", "Susanne Photo Viewer", TrayIcon.MessageType.INFO);
+                    trayIcon.displayMessage("Joanne", "Joanne Photo Viewer", TrayIcon.MessageType.INFO);
                 }
             }
 
@@ -1370,7 +1259,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
            System.exit(0);
         });
         aboutItem.addActionListener((action) ->{
-           JOptionPane.showMessageDialog(null, "                  Susanne\n"+"ver: "+ver.toString()+"\nAuthor:Obsidiam\nLicense:Freeware", "About", JOptionPane.PLAIN_MESSAGE,new ImageIcon("icons/disc_small.png"));
+           JOptionPane.showMessageDialog(null, "                  Joanne\n"+"ver: "+ver.toString()+"\nAuthor:Obsidiam\nLicense:Freeware", "About", JOptionPane.PLAIN_MESSAGE,new ImageIcon("icons/disc_small.png"));
         });
         reportItem.addActionListener(action ->{
            JOptionPane.showMessageDialog(null, new JTextField("Code: "+e.getErrorInfo(new UnsupportedOperationException())+" Email us at: http://neologysoftware.wix.com/main"),new UnsupportedOperationException().toString(),JOptionPane.INFORMATION_MESSAGE);
@@ -1409,9 +1298,9 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         }
 
         private void resize() {
-              size.setText(String.valueOf(zoom.get()/X*100));
-              image_view.setFitHeight(zoom.get()/Y*100);
-              image_view.setFitWidth(zoom.get()/X*100);
+              size.setText(String.valueOf((zoom.get()*X)/100));
+              image_view.setFitHeight((zoom.get()*Y)/100);
+              image_view.setFitWidth((zoom.get()*X)/100);
               System.gc();
         }
 

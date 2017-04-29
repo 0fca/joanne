@@ -1,5 +1,5 @@
 .text-field,.button{
-    -fx-background-color: #455A64;
+    -fx-background-color: #00BCD4;
     -fx-font-family: "Monospaced";
     -fx-font-size: 14px;
     -fx-font-weight: bold;
@@ -9,17 +9,16 @@
   }
 
 .list-view{
-  -fx-background-color: #CFD8DC;
+  -fx-background-color: #e5e5e5;
   -fx-padding: 5 5 5 5;
 }
 .list-cell:hover{
-    -fx-text-fill: #757575;
     -fx-font-family: "Helvetica";
     -fx-font-size: 14px;
     -fx-font-weight: bold;
 }
 .list-cell,.menu-bar,.menu,.menu-item{
-    -fx-background-color: #CFD8DC;
+    -fx-background-color: #e5e5e5;
     -fx-text-fill: #212121;
     -fx-font-family: "Helvetica";
     -fx-font-size: 14px;
@@ -44,7 +43,7 @@
 }
 .choice-box,.combo-box,#close_menu{
     -fx-cursor:hand;
-    -fx-background-color: #CFD8DC;
+    -fx-background-color: #e5e5e5;
     -fx-font-family: "Helvetica";
     -fx-font-size: 14px;
     -fx-padding: 1 5 1 5;
@@ -54,10 +53,10 @@
   -fx-cursor: hand;
 }
 #border,.scroll-pane,.anchor-pane{
-  -fx-background-color: #455A64;
+  -fx-background-color: #e5e5e5;
 }
 .scroll-bar,.scroll{
-  -fx-background-color: #CFD8DC;
+  -fx-background-color: #e5e5e5;
 }
 #prev_lbl:hover{
   -fx-effect: dropshadow(three-pass-box , rgba(0,0,0,0.2),10, 0.0 , 1 , 0);
@@ -68,5 +67,5 @@
 
 }
 #pane{
-  -fx-effect: dropshadow(three-pass-box , rgba(0,0,0,0.2),10, 0.0 , 1 , 0);   
+  -fx-effect: dropshadow(three-pass-box , rgba(0,0,0,0.2),10, 0.0 , 1 , 0);
 }

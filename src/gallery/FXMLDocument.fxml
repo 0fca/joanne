@@ -2,7 +2,6 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.CheckMenuItem?>
-<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.ContextMenu?>
 <?import javafx.scene.control.Label?>
@@ -20,7 +19,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" fx:id="root" prefHeight="718.0" prefWidth="916.0" style="-fx-background-color: #455A64;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gallery.FXMLDocumentController">
+<AnchorPane id="AnchorPane" fx:id="root" prefHeight="718.0" prefWidth="916.0" style="-fx-background-color: #E5E5E5;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gallery.FXMLDocumentController">
     <children>
       <HBox alignment="CENTER_RIGHT" focusTraversable="true" layoutX="-2.0" layoutY="84.0" prefHeight="29.0" prefWidth="916.0" spacing="5.0" AnchorPane.leftAnchor="-2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="84.0">
          <children>
@@ -29,19 +28,18 @@
                   <Font name="System Bold" size="14.0" />
                </font>
             </Label>
-            <Label fx:id="elements" prefHeight="26.0" prefWidth="92.0" text="Elements:" textFill="WHITE" />
-            <Label fx:id="items_count" alignment="CENTER" contentDisplay="TOP" prefHeight="26.0" prefWidth="53.0" />
          </children>
       </HBox>
-      <HBox fx:id="front_panel" alignment="CENTER_LEFT" layoutX="-4.0" layoutY="29.0" prefHeight="44.0" prefWidth="923.0" spacing="20.0" AnchorPane.bottomAnchor="636.0" AnchorPane.leftAnchor="-4.0" AnchorPane.rightAnchor="-3.0">
+      <HBox fx:id="front_panel" alignment="CENTER_LEFT" layoutX="-4.0" layoutY="29.0" prefHeight="44.0" prefWidth="923.0" spacing="20.0" style="-fx-background-color: #00BCD4;" AnchorPane.leftAnchor="-4.0" AnchorPane.rightAnchor="-3.0">
          <children>
             <Label fx:id="menu_label" alignment="CENTER" contentDisplay="CENTER" prefHeight="29.0" prefWidth="47.0" visible="false" />
             <ComboBox fx:id="folders" prefHeight="26.0" prefWidth="206.0" promptText="Favorite dirs" />
             <Label fx:id="rotate_left" prefHeight="32.0" prefWidth="32.0" />
             <Label fx:id="rotate_right" prefHeight="32.0" prefWidth="32.0" />
-            <ChoiceBox fx:id="defaults" prefHeight="26.0" prefWidth="129.0" />
             <Label fx:id="size" prefHeight="22.0" prefWidth="63.0" textFill="#0447f1" />
             <Label text="\%" textFill="WHITE" />
+            <Label fx:id="elements" prefHeight="26.0" prefWidth="92.0" text="Elements:" textFill="WHITE" />
+            <Label fx:id="items_count" alignment="CENTER" contentDisplay="TOP" prefHeight="26.0" prefWidth="96.0" />
          </children>
          <opaqueInsets>
             <Insets />
@@ -50,7 +48,7 @@
             <Insets left="15.0" />
          </padding>
       </HBox>
-      <ScrollPane fx:id="scroll" fitToHeight="true" fitToWidth="true" layoutX="74.0" layoutY="123.0" prefHeight="483.0" prefWidth="774.0" style="-fx-background-color: #455A64;" AnchorPane.bottomAnchor="112.0" AnchorPane.leftAnchor="74.0" AnchorPane.rightAnchor="68.0" AnchorPane.topAnchor="123.0">
+      <ScrollPane fx:id="scroll" fitToHeight="true" fitToWidth="true" layoutX="74.0" layoutY="123.0" prefHeight="461.0" prefWidth="774.0" style="-fx-background-color: #E5E5E5;" AnchorPane.bottomAnchor="134.0" AnchorPane.leftAnchor="74.0" AnchorPane.rightAnchor="68.0" AnchorPane.topAnchor="123.0">
          <content>
             <BorderPane fx:id="border" cache="true" cacheHint="QUALITY" prefHeight="409.0" prefWidth="807.0">
                <center>
@@ -59,11 +57,11 @@
             </BorderPane>
          </content>
       </ScrollPane>
-      <ListView fx:id="image_list" cacheHint="QUALITY" layoutY="576.0" orientation="HORIZONTAL" prefHeight="84.0" prefWidth="916.0" AnchorPane.bottomAnchor="29.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+      <ListView fx:id="image_list" cacheHint="QUALITY" layoutY="576.0" orientation="HORIZONTAL" prefHeight="103.0" prefWidth="916.0" style="-fx-background-color: #00BCD4;" AnchorPane.bottomAnchor="29.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <contextMenu>
             <ContextMenu fx:id="context" />
          </contextMenu></ListView>
-      <MenuBar fx:id="menu_bar" prefHeight="29.0" prefWidth="757.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="0.0">
+      <MenuBar fx:id="menu_bar" prefHeight="29.0" prefWidth="923.0" style="-fx-background-color: #E5E5E5;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="-7.0" AnchorPane.topAnchor="0.0">
         <menus>
           <Menu mnemonicParsing="false" text="File">
             <items>
@@ -123,13 +121,13 @@
         </menus>
       </MenuBar>
       <Label fx:id="prev_lbl" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" layoutX="1.0" layoutY="122.0" maxHeight="408.0" maxWidth="70.0" minHeight="-Infinity" minWidth="-Infinity" opacity="0.6" prefHeight="408.0" prefWidth="70.0" text="Label" AnchorPane.leftAnchor="0.0" />
-      <Pane fx:id="pane" layoutX="-251.0" prefHeight="718.0" prefWidth="244.0" style="-fx-background-color: #455A64;" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <Pane fx:id="pane" layoutX="-251.0" prefHeight="718.0" prefWidth="244.0" style="-fx-background-color: #00BCD4;" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <ListView fx:id="information" layoutX="-3.0" layoutY="71.0" prefHeight="651.0" prefWidth="244.0" />
             <Label alignment="CENTER" layoutX="4.0" layoutY="14.0" prefHeight="16.0" prefWidth="244.0" text="Information" />
          </children>
       </Pane>
       <Label fx:id="next_lbl" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" layoutX="846.0" layoutY="122.0" maxHeight="408.0" maxWidth="70.0" minHeight="-Infinity" minWidth="-Infinity" opacity="0.6" prefHeight="408.0" prefWidth="70.0" AnchorPane.rightAnchor="0.0" />
-      <Label alignment="CENTER" layoutX="-4.0" layoutY="690.0" prefHeight="29.0" prefWidth="923.0" style="-fx-background-color: #CFD8DC;" text="Joanne - proudly designed for Linux" textFill="#212121" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-4.0" AnchorPane.rightAnchor="-3.0" />
+      <Label alignment="CENTER" layoutX="-4.0" layoutY="690.0" prefHeight="29.0" prefWidth="923.0" style="-fx-background-color: #00BCD4;" text="Joanne - proudly designed for Linux" textFill="#212121" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-4.0" AnchorPane.rightAnchor="-3.0" />
     </children>
 </AnchorPane>
