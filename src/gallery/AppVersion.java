@@ -13,8 +13,8 @@ package gallery;
 public class AppVersion {
     private int SELECTOR = 0;
     private int MAJOR = 0;
-    private int MINOR = 6;
-    private int BUILD = 5;
+    private int MINOR = 7;
+    private int BUILD = 1;
     
     public AppVersion(int selector){
         this.SELECTOR = selector;

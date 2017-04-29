@@ -137,7 +137,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private Alert a = new Alert(AlertType.INFORMATION);
     private Image next_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/next.png"));
     private Image prev_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/prev.png"));
-    private Image menu_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/menu.png"),48,48,true,true);
+    private Image menu_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/menu.png"),32,32,true,true);
     private Image iv_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/iv.png"),48,48,true,true);
     private Image rotate_right_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/rotate_right.png"),32,32,true,true);
     private Image rotate_left_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/rotate_left.png"),32,32,true,true);
@@ -1002,14 +1002,14 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     
     private void animateFrontPanelMove() {
         TranslateTransition openNav = new TranslateTransition(new Duration(350), front_panel);
-        openNav.setToX(front_panel.getHeight());
+        openNav.setToY(front_panel.getHeight());
         TranslateTransition closeNav = new TranslateTransition(new Duration(350), front_panel);
         
-        if(front_panel.getTranslateY() < front_panel.getHeight()){
-            openNav.play();
-        }else{
-            closeNav.setToX(-(front_panel.getHeight()));
+        if(front_panel.getTranslateY() > 0){
+            closeNav.setToY(-(front_panel.getHeight()));
             closeNav.play();
+        }else{
+            openNav.play();
         }
     }
     
