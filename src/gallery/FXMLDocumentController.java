@@ -27,7 +27,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.attribute.UserPrincipal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -85,7 +84,6 @@ import javafx.util.Duration;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-import org.apache.commons.io.comparator.LastModifiedFileComparator;
 
 /**
  * @author Obsidiam
@@ -108,7 +106,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     @FXML
     private MenuItem reset,delete,about,fullscreen,save,close,rename,remove,open,open_file,codes;
     @FXML
-    private CheckMenuItem ext,owner,date;
+    private CheckMenuItem ext,owner,date,find_date;
     @FXML
     private ContextMenu context;
     @FXML
@@ -584,7 +582,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         });
         
         ext.setOnAction(event ->{
-            if(ext.isSelected()){
+           
                 TextInputDialog in = new TextInputDialog(".png");
                 Optional<String> change = in.showAndWait();
                 change.ifPresent(present ->{
@@ -605,30 +603,10 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                         Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 });
-            }else{
-                if(!ACTUAL_SELECTED.isEmpty()){
-                      model_man.listImages(ACTUAL_SELECTED);
-                }
-                try {
-                if(owner.isSelected()){
-                    
-                        model_man.sortImageList("owner", OWNER);
-                    
-                }
-                if(date.isSelected()){
-                   
-                        model_man.sortImageList("date", DATE);
-                   
-                }
-                } catch (IOException | ParseException ex) {
-                        Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
             event.consume();
         });
         
         owner.setOnAction(event ->{
-            if(owner.isSelected()){
             TextInputDialog in = new TextInputDialog(OWNER);
             Optional<String> change = in.showAndWait();
             change.ifPresent(event2 ->{
@@ -648,30 +626,11 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                     Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
                 }
             });
-            }else{
-                if(!ACTUAL_SELECTED.isEmpty()){
-                      model_man.listImages(ACTUAL_SELECTED);
-                }
-                try {
-                    if(date.isSelected()){
-
-                            model_man.sortImageList("date", DATE);
-
-                    }
-                    if(ext.isSelected()){
-
-                            model_man.sortImageList("ext", KEYWORD);
-
-                }
-                } catch (IOException | ParseException ex) {
-                        Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
+           
             event.consume();
         });
         
-        date.setOnAction(event ->{
-            if(date.isSelected()){
+        find_date.setOnAction(event ->{
             Date date2 = new Date();
             DateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
             TextInputDialog in = new TextInputDialog(df.format(date2));
@@ -680,16 +639,9 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             
             change.ifPresent(event2 ->{
                 try {
-                    if(event2.isEmpty()|!event2.contains("-")){
-                      GIVEN_DATE = true;
-                      DATE = event2;
-                      model_man.sortImageList("date", event2);
-                    }else{
-                      GIVEN_DATE = false;  
-                      model_man.sortImageList("date", event2);  
-                      DATE = event2;
-                    }
-                    
+                   
+                    model_man.sortImageList("find_date", event2);  
+
                 } catch (IOException ex) {
                     Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
                     a.setAlertType(AlertType.ERROR);
@@ -701,25 +653,16 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                     Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
                 }
             });
-            }else{
-                if(!ACTUAL_SELECTED.isEmpty()){
-                        model_man.listImages(ACTUAL_SELECTED);
-                }
-                try {
-                    if(owner.isSelected()){
-                            model_man.sortImageList("owner", OWNER);
-                    }
-                    if(ext.isSelected()){
-                            model_man.sortImageList("ext", KEYWORD);
-                    }
-                } catch (IOException | ParseException ex) {
-                        Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            
-            event.consume();
-            }
         });
 
+        date.setOnAction(event ->{
+                try { 
+                    model_man.sortImageList("date", new File(ACTUAL_SELECTED).getParent());
+                } catch (IOException | ParseException ex) {
+                    Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+        });
+        
         image_view.setPreserveRatio(true);
         prev_lbl.setGraphic(new ImageView(prev_img));
         next_lbl.setGraphic(new ImageView(next_img));
@@ -771,7 +714,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             
         });
         codes.setOnAction(event ->{
-                     TextInputDialog tx = new TextInputDialog("");
+            TextInputDialog tx = new TextInputDialog("");
             tx.setContentText("Type the error code here:");
             Optional<String> in = tx.showAndWait();
             in.ifPresent(consumer ->{
@@ -942,92 +885,11 @@ public class FXMLDocumentController extends Gallery implements Initializable {
    
         
     private void sortImageList(String sorting_option,String param) throws IOException, ParseException{
-        if(!ACTUAL_SELECTED.isEmpty()){       
-        switch(sorting_option){
-            
-            case "ext":   
-                try{
-               
-                images.forEach(event ->{
-                   System.out.print(event);
-                    if(new File(event).getName().contains(param)){
-                       sorted.add(event);
-                    }
-                });
-                break;
-             }finally{
-                listFromTable();
-             }
-                
-            case "owner":
-            try{
-                images.forEach(event ->{
-                   System.out.print(event);
-                    try {
-                        UserPrincipal user = Files.getOwner(new File(event).toPath(), LinkOption.NOFOLLOW_LINKS);
-                        System.out.print(user);
-                        if(user.toString().equals(param)){
-                            
-                           sorted.add(event);
-                        }
-                    } catch (IOException ex) {
-                      a.setAlertType(AlertType.ERROR);
-                       a.setTitle("Rename");
-                       a.setHeaderText("Error while renaming the file.");
-                       a.setContentText("Error code: "+e.getErrorInfo(ex)+"\n"+e.getErrorMessage(ex));
-                       a.showAndWait();
-                    }
-                    
-                });
-            
-            }finally{
-                listFromTable();
-            }
-             break;
-             
-            case "date":
-                try{
-                    LastModifiedFileComparator c = new LastModifiedFileComparator();
-                    List<File> l = new ArrayList<>();
-                        for(int i = 0; i<images.size(); i++){
-                            l.add(new File(images.get(i)));
-                        }
-                    if(GIVEN_DATE){
-                        
-                        List<File> f = c.sort(l);
-                        sorted.clear();
-                        
-                        f.forEach(x ->{
-                           sorted.add(x.getAbsolutePath());
-                        });
-                    }else{
-                        
-                        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
-                        SimpleDateFormat df2 = new SimpleDateFormat("dd-MMM-yyyy");
-                        
-                        Date file = new Date();
-                        String d = df.format(file);
-                        System.out.print(df2.format(new File("/home/lukas/Podręczne/DENIED/susann.png").lastModified())+"\n");
-                        System.out.print(d);
-                        sorted.clear();
-                        
-                        List<File> l1 = new ArrayList<>();
-                        images.stream().filter((image) -> ( df2.format(new File(image).lastModified()).equals(d))).forEach((image) -> {
-                            l1.add(new File(image));
-                        });
-                        
-                        List<File> f = c.sort(l1);
-                        f.forEach(x ->{
-                            sorted.add(x.getAbsolutePath());
-                        });
-                    }
-                }finally{
-                    listFromTable();
-                }
-            break;
-            //case for ascend/descend date sorting...
-        }
-        }
+        Sorter s = new Sorter(images,sorted);
+        s.chooseSortAlgorithm(sorting_option, param);
+        s.getSortedList();
+        System.out.println(sorted.size());
+        listFromTable();
     }
     
     private void setInofrmationToModel(ArrayList<String> a){
@@ -1058,7 +920,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
          try {
        if(!dir.isEmpty()){
                 if(!dir.startsWith("https")||!dir.startsWith("http")){
-               
                     Stream<Path> list = Files.list(new File(dir).toPath());
                     
                     ObservableList<String> o = image_list.getItems();
@@ -1095,7 +956,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                        a.setContentText("Error code: "+e.getErrorInfo(ex)+"\n"+e.getErrorMessage(ex));
                        a.showAndWait();
                     }
-                   
                 }
             }else{
                 Image i = new Image(FXMLDocumentController.class.getResourceAsStream("jeżyk.jpg"));
@@ -1109,10 +969,10 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             }catch (IOException ex) {
                     Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
                     a.setAlertType(AlertType.ERROR);
-                       a.setTitle("Rename");
-                       a.setHeaderText("Error while renaming the file.");
-                       a.setContentText("Error code: "+e.getErrorInfo(ex)+"\n"+e.getErrorMessage(ex));
-                       a.showAndWait();
+                    a.setTitle("Rename");
+                    a.setHeaderText("Error while renaming the file.");
+                    a.setContentText("Error code: "+e.getErrorInfo(ex)+"\n"+e.getErrorMessage(ex));
+                    a.showAndWait();
             }
        items_count.setText(String.valueOf(images.size()));
        System.gc();
@@ -1299,8 +1159,8 @@ public class FXMLDocumentController extends Gallery implements Initializable {
 
         private void resize() {
               size.setText(String.valueOf((zoom.get()*X)/100));
-              image_view.setFitHeight((zoom.get()*Y)/100);
-              image_view.setFitWidth((zoom.get()*X)/100);
+              image_view.setFitHeight(zoom.get());
+              image_view.setFitWidth(zoom.get());
               System.gc();
         }
 
