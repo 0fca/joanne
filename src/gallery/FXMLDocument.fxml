@@ -19,9 +19,9 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" fx:id="root" prefHeight="718.0" prefWidth="916.0" style="-fx-background-color: #4B5567;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gallery.FXMLDocumentController">
+<AnchorPane id="AnchorPane" fx:id="root" prefHeight="718.0" prefWidth="916.0" style="-fx-background-color: #455A64;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gallery.FXMLDocumentController">
     <children>
-      <HBox alignment="CENTER_RIGHT" focusTraversable="true" layoutX="67.0" layoutY="50.0" prefHeight="29.0" prefWidth="850.0" spacing="15.0" AnchorPane.leftAnchor="67.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="50.0">
+      <HBox alignment="CENTER_RIGHT" focusTraversable="true" layoutX="67.0" layoutY="50.0" prefHeight="29.0" prefWidth="850.0" spacing="5.0" AnchorPane.leftAnchor="67.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="50.0">
          <children>
               <Label fx:id="title" alignment="TOP_CENTER" minHeight="16" minWidth="69" prefHeight="29.0" prefWidth="703.0" textAlignment="CENTER" textFill="#0a65bf">
                <font>
@@ -32,16 +32,17 @@
             <Label fx:id="items_count" alignment="CENTER" contentDisplay="TOP" prefHeight="26.0" prefWidth="53.0" />
          </children>
       </HBox>
-      <HBox alignment="CENTER" layoutY="464.0" prefHeight="45.0" prefWidth="757.0" spacing="20.0" AnchorPane.bottomAnchor="139.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+      <HBox fx:id="front_panel" alignment="CENTER" layoutY="77.0" prefHeight="46.0" prefWidth="916.0" spacing="20.0" AnchorPane.bottomAnchor="595.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <children>
-            <ComboBox fx:id="folders" prefHeight="26.0" prefWidth="168.0" promptText="Favorite dirs" />
-            <ComboBox fx:id="rotate" prefWidth="150.0" promptText="Rotate" />
-            <Label fx:id="size" prefHeight="22.0" prefWidth="55.0" textFill="#0447f1" />
+            <ComboBox fx:id="folders" prefHeight="26.0" prefWidth="206.0" promptText="Favorite dirs" />
+            <Label fx:id="rotate_left" prefHeight="32.0" prefWidth="32.0" />
+            <Label fx:id="rotate_right" prefHeight="32.0" prefWidth="32.0" />
+            <ChoiceBox fx:id="defaults" prefHeight="26.0" prefWidth="129.0" />
+            <Label fx:id="size" prefHeight="22.0" prefWidth="63.0" textFill="#0447f1" />
             <Label text="\%" textFill="WHITE" />
-            <ChoiceBox fx:id="defaults" prefWidth="150.0" />
          </children>
       </HBox>
-      <ScrollPane fx:id="scroll" fitToHeight="true" fitToWidth="true" layoutX="74.0" layoutY="120.0" prefHeight="411.0" prefWidth="810.0" AnchorPane.bottomAnchor="187.0" AnchorPane.leftAnchor="74.0" AnchorPane.rightAnchor="68.0" AnchorPane.topAnchor="120.0">
+      <ScrollPane fx:id="scroll" fitToHeight="true" fitToWidth="true" layoutX="74.0" layoutY="123.0" prefHeight="453.0" prefWidth="774.0" style="-fx-background-color: #455A64;" AnchorPane.bottomAnchor="142.0" AnchorPane.leftAnchor="74.0" AnchorPane.rightAnchor="68.0" AnchorPane.topAnchor="123.0">
          <content>
             <BorderPane fx:id="border" cache="true" cacheHint="QUALITY" prefHeight="409.0" prefWidth="807.0">
                <center>
@@ -115,12 +116,13 @@
       </MenuBar>
       <Label fx:id="menu_label" alignment="CENTER" contentDisplay="CENTER" layoutX="14.0" layoutY="48.0" prefHeight="29.0" prefWidth="43.0" visible="false" />
       <Label fx:id="prev_lbl" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" layoutX="1.0" layoutY="122.0" maxHeight="408.0" maxWidth="70.0" minHeight="-Infinity" minWidth="-Infinity" opacity="0.6" prefHeight="408.0" prefWidth="70.0" text="Label" AnchorPane.leftAnchor="0.0" />
-      <Pane fx:id="pane" layoutX="-200.0" prefHeight="718.0" prefWidth="200.0" style="-fx-background-color: #328BDB;">
+      <Pane fx:id="pane" layoutX="-251.0" prefHeight="718.0" prefWidth="244.0" style="-fx-background-color: #455A64;" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <ListView fx:id="information" layoutX="-3.0" layoutY="71.0" prefHeight="128.0" prefWidth="200.0" />
+            <ListView fx:id="information" layoutX="-3.0" layoutY="71.0" prefHeight="651.0" prefWidth="244.0" />
+            <Label alignment="CENTER" layoutX="4.0" layoutY="14.0" prefHeight="16.0" prefWidth="244.0" text="Information" />
          </children>
       </Pane>
       <Label fx:id="next_lbl" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" layoutX="846.0" layoutY="122.0" maxHeight="408.0" maxWidth="70.0" minHeight="-Infinity" minWidth="-Infinity" opacity="0.6" prefHeight="408.0" prefWidth="70.0" AnchorPane.rightAnchor="0.0" />
-      <Label alignment="CENTER" layoutX="-4.0" layoutY="690.0" prefHeight="29.0" prefWidth="923.0" style="-fx-background-color: #328BDB;" text="Joanne - proudly designed for Linux" textFill="WHITE" AnchorPane.leftAnchor="-4.0" AnchorPane.rightAnchor="-3.0" AnchorPane.topAnchor="690.0" />
+      <Label alignment="CENTER" layoutX="-4.0" layoutY="690.0" prefHeight="29.0" prefWidth="923.0" style="-fx-background-color: #CFD8DC;" text="Joanne - proudly designed for Linux" textFill="#212121" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-4.0" AnchorPane.rightAnchor="-3.0" />
     </children>
 </AnchorPane>

@@ -77,6 +77,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -100,11 +101,11 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     @FXML
     private Parent root;
     @FXML
-    private Label prev_lbl,next_lbl,title,menu_label,items_count,size,elements;
+    private Label prev_lbl,next_lbl,title,menu_label,items_count,size,elements,rotate_right,rotate_left;
     @FXML
     private BorderPane border;
     @FXML
-    private ComboBox rotate,folders;
+    private ComboBox folders;
     @FXML
     private ChoiceBox defaults;
     @FXML
@@ -117,7 +118,10 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private Pane pane;
     @FXML
     private ScrollPane scroll;
+    @FXML
+    private HBox front_panel;
     
+    private double rot_arc;
     private int first,last;
     private DoubleProperty zoom;
     
@@ -127,13 +131,16 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private static ArrayList<String> images = new ArrayList<>();
     private int selection = -1;
     private int LAST_SELECTED = -1;
-    private double PERCENT = 100;
+    private double X = 500;
+    private double Y = 400;
     private String ACTUAL_SELECTED = "";
     private Alert a = new Alert(AlertType.INFORMATION);
     private Image next_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/next.png"));
     private Image prev_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/prev.png"));
     private Image menu_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/menu.png"),48,48,true,true);
     private Image iv_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/iv.png"),48,48,true,true);
+    private Image rotate_right_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/rotate_right.png"),32,32,true,true);
+    private Image rotate_left_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/rotate_left.png"),32,32,true,true);
     private ModelManager model_man = new ModelManager();
     private ImageManager image_man = new ImageManager();
     private ErrorLogger e = new ErrorLogger();
@@ -141,17 +148,16 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private String OWNER = System.getProperty("user.name");
     private String DATE = "";
     private String KEYWORD = ".png";
-    //private ArrayList<String> SUMMARY = new ArrayList<>();
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         FileWriter fw;
         try {
-            fw = new FileWriter(new File("/home/lukas/Desktop/debug"));
+            fw = new FileWriter(new File("debug"));
        
         BufferedWriter bw = new BufferedWriter(fw);
      
-                
+                   
         bw.append("Initializing...");
         bw.newLine();
 
@@ -178,13 +184,24 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         }
         
         
-        zoom = new SimpleDoubleProperty(200);
+        zoom = new SimpleDoubleProperty(100);
          
         zoom.addListener(listener ->{ 
-            model_man.resize(zoom.get(),zoom.get());
-            
+            model_man.resize(); 
         });
         
+        rotate_right.setGraphic(new ImageView(rotate_right_img));
+        rotate_left.setGraphic(new ImageView(rotate_left_img));
+        
+        rotate_right.setOnMouseClicked(event ->{
+            rot_arc += 90.0;
+            model_man.rotate();
+        });
+        
+        rotate_left.setOnMouseClicked(event ->{
+            rot_arc -= 90.0;
+            model_man.rotate();
+        });
         
         image_list.setOnMouseClicked((event) ->{
             if(event.getButton() == MouseButton.SECONDARY){
@@ -213,11 +230,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                }
                
             }
-        });
-        
-        
-        border.setOnMouseClicked(event ->{ 
-           
         });
 
         close.setOnAction(event ->{
@@ -292,8 +304,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             Stage stage2 = (Stage) root.getScene().getWindow();
      
             if(stage2.isFullScreen()){
-                PERCENT = 100;
-                size.setText(String.valueOf(PERCENT));
+                size.setText(String.valueOf(100));
                 model_man.resize();
                 stage2.setFullScreen(false);
                 
@@ -304,14 +315,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             }
             }
         });
-        
-        rotate.setOnAction(event ->{
-            if(image_view.getImage() != null){
-            Object o = rotate.getSelectionModel().getSelectedItem();
-            double d = Double.parseDouble(o.toString());
-            image_view.setRotate(d);
-            }
-        });
+       
        
         
         defaults.setOnAction(event ->{
@@ -332,16 +336,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             image_list.setItems(FXCollections.observableArrayList());
             title.setText(defaults.getSelectionModel().getSelectedItem().toString());
         });
-        
-      
-        ObservableList<Double> d = FXCollections.observableArrayList();
-        double iter = 0.0;
-        
-        while(iter<=360.0){
-            d.add(iter);
-            iter+=45.0;
-        }
-        rotate.setItems(d);
+
        
         about.setOnAction(event ->{
             a.setAlertType(AlertType.INFORMATION);
@@ -464,15 +459,13 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         root.setOnKeyTyped(event ->{
             if(selection != -1){
                 if(event.getCharacter().equals("+")){
-                    PERCENT = PERCENT + 50;
                     model_man.resize();
-                    size.setText(String.valueOf(PERCENT));
+                    size.setText(String.valueOf(image_view.getFitWidth()/X*100));
                 }
 
                 if(event.getCharacter().equals("-")){
-                    PERCENT = PERCENT - 50;
                     model_man.resize();
-                    size.setText(String.valueOf(PERCENT));
+                    size.setText(String.valueOf(image_view.getFitWidth()/X*100));
                 }
             }
             event.consume();
@@ -874,6 +867,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
               }
               event.consume();
         }); 
+        animateFrontPanelMove();
     }  
         
     private void createFavoritesList() throws FileNotFoundException, IOException{
@@ -1002,6 +996,19 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             openNav.play();
         }else{
             closeNav.setToX(-(pane.getWidth()));
+            closeNav.play();
+        }
+    }
+    
+    private void animateFrontPanelMove() {
+        TranslateTransition openNav = new TranslateTransition(new Duration(350), front_panel);
+        openNav.setToX(front_panel.getHeight());
+        TranslateTransition closeNav = new TranslateTransition(new Duration(350), front_panel);
+        
+        if(front_panel.getTranslateY() < front_panel.getHeight()){
+            openNav.play();
+        }else{
+            closeNav.setToX(-(front_panel.getHeight()));
             closeNav.play();
         }
     }
@@ -1401,19 +1408,17 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             return last;
         }
 
-        private void resize(double x, double y) {
-              size.setText(String.valueOf(PERCENT/100f*x));
-              image_view.setFitHeight(PERCENT/100f*x);
-              image_view.setFitWidth(PERCENT/100f*y);
+        private void resize() {
+              size.setText(String.valueOf(zoom.get()/X*100));
+              image_view.setFitHeight(zoom.get()/Y*100);
+              image_view.setFitWidth(zoom.get()/X*100);
               System.gc();
         }
 
-        private void resize() {
-              size.setText(String.valueOf(PERCENT/100f*border.getWidth()));
-              image_view.setFitHeight(PERCENT/100f*border.getWidth());
-              image_view.setFitWidth(PERCENT/100f*border.getHeight());
-              System.gc();
+        private void rotate() {
+            image_view.setRotate(rot_arc);
         }
+
     }
     
    private class CellImageAdd extends ListCell<String> {

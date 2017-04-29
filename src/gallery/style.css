@@ -1,45 +1,50 @@
-.list-view,.text-field,.button{
-    -fx-background-color: #328BDB;
+.text-field,.button{
+    -fx-background-color: #455A64;
     -fx-font-family: "Monospaced";
     -fx-font-size: 14px;
     -fx-font-weight: bold;
     -fx-padding: 5 5 5 5;
     -fx-effect: dropshadow( one-pass-box , rgba(255,255,255,0.2),1, 0.0 , 0 , 1);
     -fx-text-fill: rgb(255,255,255);
-    -fx-border-radius: 5;
+  }
+
+.list-view{
+  -fx-background-color: #CFD8DC;
+  -fx-padding: 5 5 5 5;
 }
 .list-cell:hover{
-    -fx-text-fill: #000000;
+    -fx-text-fill: #757575;
     -fx-font-family: "Helvetica";
     -fx-font-size: 14px;
     -fx-font-weight: bold;
 }
 .list-cell,.menu-bar,.menu,.menu-item{
-    -fx-background-color: #328BDB;
-    -fx-text-fill: #FFFFFF;
+    -fx-background-color: #CFD8DC;
+    -fx-text-fill: #212121;
     -fx-font-family: "Helvetica";
     -fx-font-size: 14px;
     -fx-font-weight: bold;
 }
 .label{
-  -fx-text-fill: #FFFFFF;
+  -fx-text-fill: #212121;
   -fx-font-family: "Helvetica";
   -fx-font-size: 14px;
   -fx-font-weight: bold;
 }
 .label:hover{
-  -fx-text-fill: #000000;
+  -fx-text-fill: #757575;
 }
 #elements{
   -fx-font-family: "Helvetica";
   -fx-font-size: 13px;
+  -fx-text-fill:#FFFFFF;
 }
 .menu-bar{
     -fx-effect: dropshadow(three-pass-box , rgba(0,0,0,0.2),10, 0.0 , 5 , 0);
 }
 .choice-box,.combo-box,#close_menu{
     -fx-cursor:hand;
-    -fx-background-color: #328BDB;
+    -fx-background-color: #CFD8DC;
     -fx-font-family: "Helvetica";
     -fx-font-size: 14px;
     -fx-padding: 1 5 1 5;
@@ -49,10 +54,10 @@
   -fx-cursor: hand;
 }
 #border,.scroll-pane,.anchor-pane{
-  -fx-background-color: #4B5567;
+  -fx-background-color: #455A64;
 }
-.scroll-bar{
-  -fx-background-color: #328BDB;
+.scroll-bar,.scroll{
+  -fx-background-color: #CFD8DC;
 }
 #prev_lbl:hover{
   -fx-effect: dropshadow(three-pass-box , rgba(0,0,0,0.2),10, 0.0 , 1 , 0);
@@ -61,4 +66,7 @@
 #next_lbl:hover{
   -fx-effect: dropshadow(three-pass-box , rgba(0,0,0,0.2),10, 0.0 , 1 , 0);
 
+}
+#pane{
+  -fx-effect: dropshadow(three-pass-box , rgba(0,0,0,0.2),10, 0.0 , 1 , 0);   
 }

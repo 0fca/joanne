@@ -36,9 +36,7 @@ public class Gallery extends Application {
        
         scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         
-        
-       
-        stage.getIcons().add(new Image(new URL("file:///"+new File("iv.png").getAbsolutePath().replace("\\", "/")).toString(),16,16,true,true));
+        stage.getIcons().add(new Image(new URL(getClass().getResource("images/iv.png").toExternalForm()).toString(),16,16,true,true));
         stage.setOnCloseRequest(event ->{
             System.exit(0);
         });
