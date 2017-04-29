@@ -764,19 +764,14 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        image_list.addEventFilter(javafx.scene.input.ScrollEvent.ANY, event -> {
-            //System.gc();
-            image_list.setCellFactory(new CallbackImpl());
-        });
-        image_list.addEventFilter(javafx.scene.control.ScrollToEvent.ANY, event -> { 
-            //just for a future...
-        });
-        image_list.setOnScroll(event ->{
-            System.out.println("Scroll");
-        });
-        border.leftProperty().addListener(listener ->{
-            System.out.println("Listener");
-        });
+//        image_list.addEventFilter(javafx.scene.input.ScrollEvent.ANY, event -> {
+//            System.out.println("Scrolling.");
+//            image_list.setCellFactory(new CallbackImpl());
+//        });
+//        image_list.addEventFilter(javafx.scene.control.ScrollToEvent.ANY, event -> { 
+//            //just for a future...
+// 
+//        });
         
         
         
@@ -1179,16 +1174,15 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                 model_man.getFirstAndLast(image_list);
                 int selected_index = this.getIndex();
                 ImageView im;
-                
+               
                 if(model_man.getFirst() <= selected_index | model_man.getLast() >= selected_index){
                     Image i = new Image("file:///"+item,64,64,true,true);
                     im = new ImageView(i);
                     setGraphic(im);
                     setAlignment(Pos.CENTER);
-                    System.out.println(item);
+                    
                 }else{
                     im = new ImageView(iv_img);
-                    im.setCache(true);
                     setGraphic(im);
                     setAlignment(Pos.CENTER);
                 }
