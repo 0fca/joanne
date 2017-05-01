@@ -5,11 +5,16 @@
  */
 package gallery.xml;
 
+import gallery.enums.Environment;
+import gallery.systemproperties.EnvVars;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -19,11 +24,11 @@ import javafx.collections.ObservableList;
 
 /**
  *
- * @author lukas
+ * @author Obsidiam
  */
 public class XMLManager {
     private static volatile XMLManager XML;
-    
+    private Properties p = new Properties();
     public static synchronized XMLManager getInstance(){
         if(XML == null){
             XML = new XMLManager();
@@ -157,4 +162,25 @@ public class XMLManager {
            return false;
        }
     }
+
+    
+    public void setEnvConfiguration() throws MalformedURLException, FileNotFoundException, IOException{
+        InputStream in = XMLManager.class.getResourceAsStream("/gallery/configs/properties.xml");
+        
+        p.loadFromXML(in);
+        p.forEach((x,y)->{
+            if(x.toString().equals("xml.linux")&System.getProperty("os.name").contains("Linux")){
+                System.setProperty("xml.path", y.toString());
+            }else if(x.toString().equals("xml.windows")&System.getProperty("os.name").contains("Windows")){
+                String[] arr = y.toString().split("\\\\");
+                System.setProperty("xml.path", arr[0]+"\\"+arr[1]+"\\"+System.getProperty("user.name")+"\\"+arr[3]+"\\"+arr[4]+"\\"+arr[5]);
+            }
+        });
+        
+    }
+    
+    public String getPhotoStore(){
+        return p.getProperty("default.photo.store");
+    }
+
 }

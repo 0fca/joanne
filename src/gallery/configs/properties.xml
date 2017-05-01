@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<properties>
+    <entry key="xml.windows">C:\\Users\\%USER%\\AppData\\Local\\Apps</entry>
+    <entry key="xml.linux">/etc/</entry>
+    <entry key="default.photo.store">user.home</entry>
+</properties>

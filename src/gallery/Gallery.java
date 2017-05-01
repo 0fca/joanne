@@ -5,6 +5,9 @@
  */
 package gallery;
 
+import gallery.enums.Environment;
+import gallery.systemproperties.EnvVars;
+import gallery.xml.XMLManager;
 import java.io.File;
 import java.net.URL;
 import javafx.application.Application;
@@ -26,8 +29,9 @@ public class Gallery extends Application {
     
     @Override
     public void start(Stage stage) throws Exception {
-        
         Parent root = FXMLLoader.load(getClass().getResource("FXMLDocument.fxml"));
+        XMLManager xml = new XMLManager();
+        xml.setEnvConfiguration();
         stage.setMinWidth(600);
         stage.setMinHeight(650);
         Scene scene = new Scene(root);
@@ -44,6 +48,8 @@ public class Gallery extends Application {
         stage.setTitle("Joanne");
         stage.show();
         this.stage = stage;
+        EnvVars e = new EnvVars();
+        System.out.println(e.getEnvironmentVariable(Environment.XML_PATH));
     }
 
     /**

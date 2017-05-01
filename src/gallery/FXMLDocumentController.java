@@ -119,8 +119,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private double rot_arc;
     private int first,last;
     private DoubleProperty zoom;
-    
-    private boolean GIVEN_DATE = false;
     private ArrayList<String> sorted = new ArrayList();
     private static ArrayList<String> paths = new ArrayList<>();
     private static ArrayList<String> images = new ArrayList<>();
@@ -141,8 +139,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private ErrorLogger e = new ErrorLogger();
     AppVersion ver = new AppVersion();
     private String OWNER = System.getProperty("user.name");
-    private String DATE = "";
-    private String KEYWORD = ".png";
     private static XMLManager XML = XMLManager.getInstance();
     
     
@@ -591,7 +587,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                         System.out.print(present);
 
                         model_man.sortImageList("ext", present);
-                        KEYWORD = present;
                         }
                     } catch (IOException ex) {
                        a.setAlertType(AlertType.ERROR);
