@@ -133,7 +133,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private Image next_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/next.png"));
     private Image prev_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/prev.png"));
     private Image menu_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/menu.png"),32,32,true,true);
-    private Image iv_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/iv.png"),48,48,true,true);
+    //private Image iv_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/iv.png"),48,48,true,true);
     private Image rotate_right_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/rotate_right.png"),32,32,true,true);
     private Image rotate_left_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/rotate_left.png"),32,32,true,true);
     private ModelManager model_man = new ModelManager();
@@ -216,7 +216,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                System.gc();
                selection = image_list.getSelectionModel().getSelectedIndex();
                LAST_SELECTED = selection;
-               if(selection != -1){
+               if(selection != -1&selection != images.indexOf(ACTUAL_SELECTED)){
                  Image loaded = image_man.getImage(images.get(selection));
                  model_man.setToImgView(loaded);
                  ImageProperties im = new ImageProperties();
@@ -644,15 +644,12 @@ public class FXMLDocumentController extends Gallery implements Initializable {
 
         date.setOnAction(event ->{
                 try { 
-                    model_man.sortImageList("date", new File(PATH).getAbsolutePath());
+                    model_man.sortImageList("date", new File(PATH).getParent());
                 } catch (IOException | ParseException ex) {
                     Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
                 }
         });
         
-        image_list.setOnScrollFinished(event ->{
-            System.out.println("Finished.");
-        });
         
         image_view.setPreserveRatio(true);
         prev_lbl.setGraphic(new ImageView(prev_img));
@@ -665,9 +662,11 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             
         if(PATH != null){
             ACTUAL_SELECTED = PATH;
-            Image load = image_man.getImage(PATH);
+            PATH = new File(ACTUAL_SELECTED).getParent();
+            System.out.println(PATH);
+            Image load = image_man.getImage(ACTUAL_SELECTED);
             model_man.setToImgView(load);
-            model_man.listImages(new File(PATH).getParent());
+            model_man.listImages(PATH);
         }
         
         root.setOnKeyPressed((KeyEvent event) ->{
@@ -937,8 +936,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         System.gc();
     }
         
-    private void prepareContextItems(){
-            
+    private void prepareContextItems(){   
         image_list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         MenuItem i = new MenuItem("Load favorites...");
         i.setOnAction(event ->{
@@ -989,7 +987,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             }
         });
         
-        MenuItem i3 = new MenuItem("");
+        MenuItem i3 = new MenuItem();
         i3.setOnAction(event ->{
             model_man.listImages(PATH);
             if(LAST_SELECTED != -1){

@@ -67,7 +67,7 @@ public class Authorization {
      */
     public static Credential authorize() throws IOException {
         // Load client secrets.
-        InputStream in = new FileInputStream("/home/lukas/Desktop/client_id.json");
+        InputStream in = Authorization.class.getClass().getResourceAsStream("/gallery/configs/client_id.json");
         GoogleClientSecrets clientSecrets =
             GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
@@ -80,7 +80,7 @@ public class Authorization {
                 .build();
         
         Credential credential = new AuthorizationCodeInstalledApp(
-            flow, new LocalServerReceiver()).authorize("lukasbownik");
+            flow, new LocalServerReceiver()).authorize("lukas");
         
         System.out.println("Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
         return credential;
@@ -97,5 +97,29 @@ public class Authorization {
                 HTTP_TRANSPORT, JSON_FACTORY, credential)
                 .setApplicationName(APPLICATION_NAME)
                 .build();
+    }
+    
+    public static List<File> listFiles() throws IOException{
+        Drive service = getDriveService();
+
+        // Print the names and IDs for up to 10 files.
+        FileList result = service.files().list()
+             .setPageSize(10)
+             .setFields("nextPageToken, files(id, name)")
+             .execute();
+        List<File> files = result.getFiles();
+        if (files == null || files.size() == 0) {
+            System.out.println("No files found.");
+        } else {
+            System.out.println("Files:");
+            for (File file : files) {
+                System.out.printf("%s (%s)\n", file.getName(), file.getId());
+            }
+        }
+        return files;
+    }
+    
+    public static void main(String... args) throws IOException{
+        listFiles();
     }
 }
