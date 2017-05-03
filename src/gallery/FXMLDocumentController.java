@@ -25,7 +25,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -40,7 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -130,7 +128,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private int selection = -1;
     private int LAST_SELECTED = -1;
     private double X = 500;
-    private double Y = 400;
     private String ACTUAL_SELECTED = "";
     private Alert a = new Alert(AlertType.INFORMATION);
     private Image next_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/next.png"));
@@ -184,7 +181,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         }
         
         
-        zoom = new SimpleDoubleProperty(100);
+        zoom = new SimpleDoubleProperty(image_view.getFitWidth());
          
         zoom.addListener(listener ->{ 
             model_man.resize(); 
@@ -207,7 +204,13 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             if(event.getButton() == MouseButton.SECONDARY){
                 selection = image_list.getSelectionModel().getSelectedIndex();
                 MenuItem m = context.getItems().get(2);
-                m.setText("Back to "+new File(ACTUAL_SELECTED).getName());
+               
+                if(PATH != null){
+                    String name = new File(PATH).getName();
+                    m.setText("Back to "+name);
+                }else{
+                    m.setText("Back to ");
+                }
                 context.show(image_list, event.getScreenX(),event.getScreenY());
             }else{
                System.gc();
@@ -274,7 +277,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                   PATH = x;
                } 
             });  
-            
         });
         
         pane.setOnMouseClicked(event ->{
@@ -293,31 +295,13 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                 stage2.setFullScreen(true); 
             }
         });
-       
-       
         
-//        defaults.setOnAction(event ->{
-//            String name = defaults.getSelectionModel().getSelectedItem().toString().toLowerCase()+".jpg";
-//            Image i = new Image(FXMLDocumentController.class.getResourceAsStream("images/"+name));
-//            Stage s = (Stage)root.getScene().getWindow();
-//            
-//            image_view.setFitHeight(Y);
-//            image_view.setFitWidth(X);
-//            image_view.setImage(i);
-//            selection = -1;
-//            image_list.setItems(FXCollections.observableArrayList());
-//            title.setText(defaults.getSelectionModel().getSelectedItem().toString());
-//        });
-
-       
         about.setOnAction(event ->{
             a.setAlertType(AlertType.INFORMATION);
             a.setHeaderText("Joanne");
             a.setContentText("Joanne\nAuthor: Obsidiam\nver:"+ver.selectAndGetVersion(0)+"\nLicense:GNU GPL v.3.0\n");
             a.showAndWait();
         });
-        
-        
         
         delete.setOnAction(event ->{
             a.setAlertType(AlertType.CONFIRMATION);
@@ -666,6 +650,10 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                 }
         });
         
+        image_list.setOnScrollFinished(event ->{
+            System.out.println("Finished.");
+        });
+        
         image_view.setPreserveRatio(true);
         prev_lbl.setGraphic(new ImageView(prev_img));
         next_lbl.setGraphic(new ImageView(next_img));
@@ -680,8 +668,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             Image load = image_man.getImage(PATH);
             model_man.setToImgView(load);
             model_man.listImages(new File(PATH).getParent());
-        }else{
-            System.out.print("NULL");
         }
         
         root.setOnKeyPressed((KeyEvent event) ->{
@@ -751,11 +737,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
 
         bw.append("Listeneres initialized...");
         bw.newLine();
-        ObservableList items = FXCollections.observableArrayList();
-        items.add("Jeżyk");
-        items.add("Para");
-        //defaults.setItems(items);
-//        image_list.setCellFactory(new CallbackImpl());
         System.gc();
         bw.append("Defaults and list prepared.");
         bw.newLine();
@@ -767,10 +748,10 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        image_list.addEventFilter(javafx.scene.input.ScrollEvent.SCROLL_FINISHED, event -> {
-            System.out.println("Scrolling.");
-            //image_list.setCellFactory(new CallbackImpl());
-        });
+//        image_list.addEventFilter(javafx.scene.input.ScrollEvent.SCROLL, event -> {
+//            //System.out.println("Scrolling.");
+//            //image_list.setCellFactory(new CallbackImpl());
+//        });
 
         scroll.setPannable(true);
         
@@ -824,7 +805,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             FileInputStream in; 
             Properties p = new Properties();
             
-            
             if(Files.exists(new File(System.getProperty("user.home")+File.separatorChar+"favorites.xml").toPath())){
                 in = new FileInputStream(new File(System.getProperty("user.home")+File.separatorChar+"favorites.xml"));
                 p.loadFromXML(in);
@@ -871,8 +851,8 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     }    
         
     private void selectImg(int index){
-         image_list.getSelectionModel().select(index);
-         image_list.scrollTo(index);
+        image_list.getSelectionModel().select(index);
+        image_list.scrollTo(index);
     }
    
         
@@ -881,7 +861,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         Sorter s = new Sorter(images,sorted);
         s.chooseSortAlgorithm(sorting_option, param);
         s.getSortedList();
-        System.out.println(sorted.size());
         listFromTable();
     }
     
@@ -911,14 +890,13 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     
     private void listImages(String dir) {
          try {
-       if(!dir.isEmpty()){
-                if(!dir.startsWith("https")||!dir.startsWith("http")){
+            if(!dir.isEmpty()){
                     Stream<Path> list = Files.list(new File(dir).toPath());
                     
                     ObservableList<String> o = image_list.getItems();
                     o.clear();
                     
-                    image_list.setItems(o);
+                    image_list.getItems().clear();
                     image_list.refresh();
                     images.clear();
                     image_list.setCellFactory(new CallbackImpl());
@@ -934,30 +912,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                     };
                     image_list.setItems(o);
                     list.forEach(c);
-                    
-                }else{
-                   Image image;
-                    try {
-                        image = image_man.getImage(new URL(dir).toString());
-                        image_view.setImage(image);
-                        title.setText(new File(dir).getName());
-                    } catch (MalformedURLException ex) {
-                        Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
-                        a.setAlertType(AlertType.ERROR);
-                       a.setTitle("Rename");
-                       a.setHeaderText("Error while renaming the file.");
-                       a.setContentText("Error code: "+e.getErrorInfo(ex)+"\n"+e.getErrorMessage(ex));
-                       a.showAndWait();
-                    }
-                }
-            }else{
-                Image i = new Image(FXMLDocumentController.class.getResourceAsStream("jeżyk.jpg"));
-                Image i2 = new Image(FXMLDocumentController.class.getResourceAsStream("para.jpg"));
-                
-                Image[] list = {i,i2};
-                Random r = new Random();
-                Image rand = list[(r.nextInt(0)+2)-1];
-                model_man.setToImgView(rand);
             }
             }catch (IOException ex) {
                     Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
@@ -1070,7 +1024,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         }
         
         final PopupMenu popup = new PopupMenu();
-        final TrayIcon trayIcon = new TrayIcon(new ImageIcon("iv.png").getImage().getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH));
+        final TrayIcon trayIcon = new TrayIcon(new ImageIcon("/gallery/images/iv.png").getImage().getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH));
         final SystemTray tray = SystemTray.getSystemTray();
         trayIcon.addMouseListener(new MouseListener(){
             @Override
@@ -1132,7 +1086,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         }
     }
        
-           @SuppressWarnings("restriction")
+        @SuppressWarnings("restriction")
         public void getFirstAndLast(ListView<?> t) {
             try {
                 ListViewSkin<?> ts = (ListViewSkin<?>) t.getSkin();
@@ -1151,10 +1105,10 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         }
 
         private void resize() {
-              size.setText(String.valueOf((zoom.get()*X)/100));
+              size.setText(String.valueOf((zoom.get()/X)*100));
               image_view.setFitHeight(zoom.get());
               image_view.setFitWidth(zoom.get());
-              System.gc();
+              //System.gc();
         }
 
         private void rotate() {
@@ -1237,7 +1191,15 @@ public class FXMLDocumentController extends Gallery implements Initializable {
       @Override
       public void run(){
           while(Thread.currentThread() == TH){
-              System.gc();
+              Runtime r = Runtime.getRuntime();
+              long free = r.freeMemory()/(1024*1024);
+              long tot = r.totalMemory()/(1024*1024);
+              if(tot > 50L){
+                  System.gc();
+                  System.out.println("GC.");
+                  System.out.println(free+" MB");
+                  System.out.println(tot+" MB");
+              }
               try {
                   Thread.sleep(5000);
               } catch (InterruptedException ex) {

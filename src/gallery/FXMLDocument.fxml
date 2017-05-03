@@ -36,8 +36,8 @@
             <ComboBox fx:id="folders" prefHeight="26.0" prefWidth="206.0" promptText="Favorite dirs" />
             <Label fx:id="rotate_left" prefHeight="32.0" prefWidth="32.0" />
             <Label fx:id="rotate_right" prefHeight="32.0" prefWidth="32.0" />
-            <Label fx:id="size" prefHeight="22.0" prefWidth="91.0" textFill="#0447f1" />
-            <Label fx:id="elements" prefHeight="26.0" prefWidth="92.0" text="Elements:" textFill="WHITE" />
+            <Label fx:id="size" prefHeight="22.0" prefWidth="117.0" textFill="#0447f1" />
+            <Label fx:id="elements" prefHeight="26.0" prefWidth="117.0" text="Elements:" textFill="WHITE" />
             <Label fx:id="items_count" alignment="CENTER" contentDisplay="TOP" prefHeight="26.0" prefWidth="96.0" />
          </children>
          <opaqueInsets>

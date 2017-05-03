@@ -187,15 +187,11 @@ import org.w3c.dom.NodeList;
       
       
     public Image getImage(String get_path) {
-       Image im = new Image("file:///"+get_path);
-           
-       double x = im.getWidth();
-       double y = im.getHeight();
-       Image image = new Image("file:///"+get_path,x,y,true,true);
+       Image image = new Image("file:///"+get_path);
+       
        return image;
     }
 
-    
         public void renameImage(String path,String file_to_rename) {
              TextInputDialog input = new TextInputDialog(file_to_rename.substring(0, file_to_rename.length()-4)+"1"+file_to_rename.substring(file_to_rename.length()-4));
                 Optional<String> change = input.showAndWait();

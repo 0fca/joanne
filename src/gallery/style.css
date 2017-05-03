@@ -4,7 +4,7 @@
     -fx-font-size: 14px;
     -fx-font-weight: bold;
     -fx-padding: 5 5 5 5;
-    -fx-effect: dropshadow( one-pass-box , rgba(255,255,255,0.2),1, 0.0 , 0 , 1);
+    -fx-effect: dropshadow( one-pass-box ,rgba(255,255,255,0.2),1, 0.0 , 0 , 1);
     -fx-text-fill: rgb(255,255,255);
   }
 
@@ -16,6 +16,7 @@
     -fx-font-family: "Helvetica";
     -fx-font-size: 14px;
     -fx-font-weight: bold;
+    -fx-background-color: #757575;
 }
 .list-cell,.menu-bar,.menu,.menu-item{
     -fx-background-color: #e5e5e5;
@@ -52,12 +53,10 @@
 #menu_label{
   -fx-cursor: hand;
 }
-#border,.scroll-pane,.anchor-pane{
+#border,.scroll-pane,.anchor-pane,.scroll-bar{
   -fx-background-color: #e5e5e5;
 }
-.scroll-bar,.scroll{
-  -fx-background-color: #e5e5e5;
-}
+
 #prev_lbl:hover{
   -fx-effect: dropshadow(three-pass-box , rgba(0,0,0,0.2),10, 0.0 , 1 , 0);
 

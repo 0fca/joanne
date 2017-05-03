@@ -60,7 +60,8 @@ public class Gallery extends Application {
      */
     public static void main(String[] args) {
         if(args.length > 0){
-           PATH = args[0];
+            
+           PATH = args[0].split("=")[1];
            System.out.print(PATH);
         }
         launch(args);
