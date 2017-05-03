@@ -14,7 +14,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -169,18 +168,27 @@ public class XMLManager {
         
         p.loadFromXML(in);
         p.forEach((x,y)->{
+            if(x.toString().equals("default.photo.store")){
+                System.setProperty(x.toString(), y.toString());
+            }
             if(x.toString().equals("xml.linux")&System.getProperty("os.name").contains("Linux")){
                 System.setProperty("xml.path", y.toString());
             }else if(x.toString().equals("xml.windows")&System.getProperty("os.name").contains("Windows")){
                 String[] arr = y.toString().split("\\\\");
                 System.setProperty("xml.path", arr[0]+"\\"+arr[1]+"\\"+System.getProperty("user.name")+"\\"+arr[3]+"\\"+arr[4]+"\\"+arr[5]);
             }
-        });
+            
+            if(x.toString().equals("default.temp.store.linux")&System.getProperty("os.name").equals("Linux")){
+                System.setProperty("temp.store", y.toString());
+            }else if(x.toString().equals("default.temp.store.win")&System.getProperty("os.name").contains("Windows")){
+                String[] arr = y.toString().split("\\\\");
+                System.setProperty("temp.store", arr[0]+"\\"+arr[1]+"\\"+System.getProperty("user.name")+"\\"+arr[3]+"\\"+arr[4]+"\\"+arr[5]);
+            }}
+        );
         
     }
     
     public String getPhotoStore(){
         return p.getProperty("default.photo.store");
     }
-
 }

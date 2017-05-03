@@ -5,4 +5,6 @@
     <entry key="xml.windows">C:\\Users\\%USER%\\AppData\\Local\\Apps</entry>
     <entry key="xml.linux">/etc/</entry>
     <entry key="default.photo.store">user.home</entry>
+    <entry key="default.temp.store.win">C:\\Users\\%USER%\\AppData\\Local\\Temp</entry>
+    <entry key="default.temp.store.linux">/tmp/</entry>
 </properties>

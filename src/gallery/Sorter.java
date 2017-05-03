@@ -89,7 +89,7 @@ public class Sorter {
         });
     }
 
-    private static void insertionsort(ArrayList<Long> l) {
+    private void insertionsort(ArrayList<Long> l) {
         int i,j;
         long v;
 
@@ -106,6 +106,7 @@ public class Sorter {
     }
 
     private void sortByDate(String path) {
+        sorted.clear();
         ArrayList<Long> l = new ArrayList<>();
         
         File f = new File(path);

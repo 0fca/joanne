@@ -15,5 +15,6 @@ public enum Environment {
     USER_DIR,
     XML_PATH,
     USER_NAME,
-    PHOTO_STORE
+    PHOTO_STORE,
+    TEMP_DIR
 }

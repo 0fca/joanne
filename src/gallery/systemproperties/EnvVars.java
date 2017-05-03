@@ -31,6 +31,10 @@ public class EnvVars {
                 var = System.getProperty("user.dir");
                 break;
             case PHOTO_STORE:
+                var = System.getProperty("default.photo.store");
+                break;
+            case TEMP_DIR:
+                var = System.getProperty("temp.store");
                 break;
         }
         return var;

@@ -49,7 +49,10 @@ public class Gallery extends Application {
         stage.show();
         this.stage = stage;
         EnvVars e = new EnvVars();
-        System.out.println(e.getEnvironmentVariable(Environment.XML_PATH));
+        String temp = e.getEnvironmentVariable(Environment.TEMP_DIR);
+        
+        File tmp = new File(temp+File.separator+"joanne");
+        System.out.println(tmp.mkdir());
     }
 
     /**
