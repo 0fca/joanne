@@ -17,7 +17,11 @@ import java.io.IOException;
 public class UploadFiles {
     private static Drive driveService = null;
     
-    public void simpleUpload(java.io.File filePath,String name,String mime) throws IOException{
+    public static void main(String[] args) throws IOException{
+        simpleUpload(new java.io.File("/home/lukas/Desktop/"),"test_file","text/plain");
+    }
+    
+    public static void simpleUpload(java.io.File filePath,String name,String mime) throws IOException{
         driveService = getDriveService();
         File fileMetadata = new File();
         fileMetadata.setName(name);

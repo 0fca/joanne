@@ -15,16 +15,15 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
-
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.*;
 import com.google.api.services.drive.Drive;
-import java.io.FileInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,12 +43,17 @@ public class Authorization {
 
     /** Global instance of the HTTP transport. */
     private static HttpTransport HTTP_TRANSPORT;
-
+    
+    /** Global variable of String type representing user's nickname. */
+    private static String NICK = "user";
     /** Global instance of the scopes required by this quickstart.
      *
      */
+    private static Credential MAIN;
     private static final List<String> SCOPES = Arrays.asList(DriveScopes.DRIVE);
 
+    private static ArrayList<String> NAMES = new ArrayList<>();
+    private static ArrayList<String> FILES_IDS = new ArrayList<>();
     static {
         try {
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
@@ -65,7 +69,7 @@ public class Authorization {
      * @return an authorized Credential object.
      * @throws IOException
      */
-    public static Credential authorize() throws IOException {
+    private static void authorize() throws IOException {
         // Load client secrets.
         InputStream in = Authorization.class.getClass().getResourceAsStream("/gallery/configs/client_id.json");
         GoogleClientSecrets clientSecrets =
@@ -80,10 +84,10 @@ public class Authorization {
                 .build();
         
         Credential credential = new AuthorizationCodeInstalledApp(
-            flow, new LocalServerReceiver()).authorize("lukas");
+            flow, new LocalServerReceiver()).authorize(NICK);
         
         System.out.println("Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
-        return credential;
+        MAIN = credential;
     }
 
     /**
@@ -92,34 +96,48 @@ public class Authorization {
      * @throws IOException
      */
     public static Drive getDriveService() throws IOException {
-        Credential credential = authorize();
+        Credential credential = MAIN;
         return new Drive.Builder(
                 HTTP_TRANSPORT, JSON_FACTORY, credential)
                 .setApplicationName(APPLICATION_NAME)
                 .build();
     }
     
-    public static List<File> listFiles() throws IOException{
-        Drive service = getDriveService();
+    public static void setNick(String nick){
+        NICK = nick;
+    }
 
+    public static void listFiles() throws IOException{
+        Drive service = getDriveService();
+       
         // Print the names and IDs for up to 10 files.
         FileList result = service.files().list()
              .setPageSize(10)
              .setFields("nextPageToken, files(id, name)")
              .execute();
         List<File> files = result.getFiles();
-        if (files == null || files.size() == 0) {
+        if (files == null || files.isEmpty()) {
             System.out.println("No files found.");
         } else {
             System.out.println("Files:");
-            for (File file : files) {
-                System.out.printf("%s (%s)\n", file.getName(), file.getId());
-            }
+            files.forEach((file) -> {
+               // System.out.printf("%s (%s)\n", file.getName(), file.getId());
+                NAMES.add(file.getName());
+            });
         }
-        return files;
     }
     
+    public static ArrayList<String> getFilesList(){
+        return NAMES;
+    }
+    
+    public static ArrayList<String> getFilesIds(){
+        return FILES_IDS;
+    }
     public static void main(String... args) throws IOException{
-        listFiles();
+        //authorize();
+        Authorization.listFiles();
+        Authorization.getFilesList();
+        DownloadFiles.downloadFiles();
     }
 }

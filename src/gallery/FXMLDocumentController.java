@@ -8,6 +8,8 @@ package gallery;
 import com.sun.javafx.scene.control.skin.ListViewSkin;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 import gallery.enums.Environment;
+import gallery.googlesync.Authorization;
+import gallery.googlesync.DownloadFiles;
 import gallery.image.ImageManager;
 import gallery.systemproperties.EnvVars;
 import gallery.xml.XMLManager;
@@ -58,6 +60,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ChoiceDialog;
@@ -118,6 +121,8 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private ScrollPane scroll;
     @FXML
     private HBox front_panel;
+    @FXML
+    private Button gd_sync;
     
     private double rot_arc;
     private int first,last;
@@ -125,6 +130,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private ArrayList<String> sorted = new ArrayList();
     private static ArrayList<String> paths = new ArrayList<>();
     private static ArrayList<String> images = new ArrayList<>();
+    private ArrayList<String> google_files = new ArrayList<>();
     private int selection = -1;
     private int LAST_SELECTED = -1;
     private double X = 500;
@@ -133,6 +139,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private Image next_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/next.png"));
     private Image prev_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/prev.png"));
     private Image menu_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/menu.png"),32,32,true,true);
+    private Image gd_sync_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/gd_icon48x48.png"),32,32,true,true);
     //private Image iv_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/iv.png"),48,48,true,true);
     private Image rotate_right_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/rotate_right.png"),32,32,true,true);
     private Image rotate_left_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/rotate_left.png"),32,32,true,true);
@@ -159,6 +166,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         e.prepareErrorList();
         model_man.trayInit();
         model_man.prepareContextItems();
+        gd_sync.setGraphic(new ImageView(gd_sync_img));
         bw.append("Initialized.");
         bw.newLine();
         bw.append("Initializing listeners...");
@@ -701,6 +709,22 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             event.consume();
             
         });
+        
+        gd_sync.setOnAction(event ->{
+            TextInputDialog d = new TextInputDialog(ENV.getEnvironmentVariable(Environment.USER_NAME));
+            Optional<String> opt = d.showAndWait();
+            
+            opt.ifPresent(event2 ->{
+                try {
+           
+                    accessGoogleDrive(event2);
+                } catch (IOException ex) {
+                    Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            
+        });
+        
         codes.setOnAction(event ->{
             TextInputDialog tx = new TextInputDialog("");
             tx.setContentText("Type the error code here:");
@@ -771,6 +795,12 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         });
     }  
       
+    private void accessGoogleDrive(String nick) throws IOException{
+        Authorization.setNick(nick);
+        Authorization.listFiles();
+        google_files = Authorization.getFilesList();
+        DownloadFiles.downloadFiles();
+    }
 
     private void animatePanelMove() {
         TranslateTransition openNav = new TranslateTransition(new Duration(350), pane);
@@ -868,6 +898,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         information.setItems(l);
         information.refresh();
     }
+    
     private void listFromTable(){
         ObservableList p = FXCollections.observableArrayList();
         images.clear();

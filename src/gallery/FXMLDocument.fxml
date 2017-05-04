@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckMenuItem?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.ContextMenu?>
@@ -39,6 +41,11 @@
             <Label fx:id="size" prefHeight="22.0" prefWidth="117.0" textFill="#0447f1" />
             <Label fx:id="elements" prefHeight="26.0" prefWidth="117.0" text="Elements:" textFill="WHITE" />
             <Label fx:id="items_count" alignment="CENTER" contentDisplay="TOP" prefHeight="26.0" prefWidth="96.0" />
+            <Button fx:id="gd_sync" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" prefHeight="26.0" prefWidth="65.0" text="GD">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Button>
          </children>
          <opaqueInsets>
             <Insets />
