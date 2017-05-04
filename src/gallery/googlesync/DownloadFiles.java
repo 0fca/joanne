@@ -6,15 +6,11 @@
 package gallery.googlesync;
 
 import com.google.api.services.drive.Drive;
-import gallery.enums.Environment;
 import static gallery.googlesync.Authorization.getDriveService;
 import gallery.systemproperties.EnvVars;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,21 +22,42 @@ import java.util.logging.Logger;
 public class DownloadFiles {
     private static Drive driveService = null;
     private static EnvVars ENV = new EnvVars();
+    private static  FileOutputStream fs;
+    private static DownloadFiles DF;
     
-    public static void downloadFiles() throws IOException {
+    public static synchronized DownloadFiles getInstance(){
+        if(DF == null){
+            DF = new DownloadFiles();
+        }
+        return DF;
+    }
+    
+    public void downloadFiles() throws IOException {
         driveService = getDriveService();
         Authorization.listFiles();
         ArrayList<String> ids = Authorization.getFilesIds();
-        
+        ArrayList<String> names = Authorization.getFilesList();
         ids.forEach(fileId ->{
-        File out_dir = new File("/tmp/joanne/"+fileId);
+            File out_dir = new File("/tmp/joanne/"+names.get(ids.indexOf(fileId)));
             try {
-                FileOutputStream fs = new FileOutputStream(out_dir);
+                fs = new FileOutputStream(out_dir);
                 driveService.files().get(fileId)
                 .executeMediaAndDownloadTo(fs);
             } catch (IOException ex) {
                 Logger.getLogger(DownloadFiles.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
+    }
+    
+    public void stop(){
+        try {
+            if(fs != null){
+                fs.flush();
+                fs.close();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(DownloadFiles.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
     }
 }

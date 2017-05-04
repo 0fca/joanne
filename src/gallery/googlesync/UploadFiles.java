@@ -15,13 +15,17 @@ import java.io.IOException;
  * @author Obsidiam
  */
 public class UploadFiles {
-    private static Drive driveService = null;
+    private Drive driveService = null;
+    private static UploadFiles UF;
     
-    public static void main(String[] args) throws IOException{
-        simpleUpload(new java.io.File("/home/lukas/Desktop/"),"test_file","text/plain");
+    public static synchronized UploadFiles getInstance(){
+        if(UF == null){
+            UF = new UploadFiles();
+        }
+        return UF;
     }
     
-    public static void simpleUpload(java.io.File filePath,String name,String mime) throws IOException{
+    public void simpleUpload(java.io.File filePath,String name,String mime) throws IOException{
         driveService = getDriveService();
         File fileMetadata = new File();
         fileMetadata.setName(name);

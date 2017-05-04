@@ -52,26 +52,33 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -80,12 +87,15 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.Duration;
+import javafx.util.Pair;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -150,7 +160,8 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private String OWNER = System.getProperty("user.name");
     private static XMLManager XML = XMLManager.getInstance();
     EnvVars ENV = new EnvVars();
-    
+    private boolean isAuthorized = false;
+    private String nick = "";
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         FileWriter fw;
@@ -711,15 +722,29 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         });
         
         gd_sync.setOnAction(event ->{
+            
             TextInputDialog d = new TextInputDialog(ENV.getEnvironmentVariable(Environment.USER_NAME));
             Optional<String> opt = d.showAndWait();
+            Task<String> t = new Task<String>(){
+                @Override
+                protected String call() throws Exception {
+                    try {
+                        accessGoogleDrive(nick,"download");
+                        } catch (IOException ex) {
+                            Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    return "";
+                }
+            };
             
             opt.ifPresent(event2 ->{
-                try {
-           
-                    accessGoogleDrive(event2);
-                } catch (IOException ex) {
-                    Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
+                if(!event2.isEmpty()){
+                    nick = event2;
+                    Thread th = new Thread(t,"GoogleSyncThread");
+                    th.setDaemon(true);
+                    th.start();
+
+                    model_man.generateDialog(t);
                 }
             });
             
@@ -795,11 +820,26 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         });
     }  
       
-    private void accessGoogleDrive(String nick) throws IOException{
-        Authorization.setNick(nick);
-        Authorization.listFiles();
-        google_files = Authorization.getFilesList();
-        DownloadFiles.downloadFiles();
+    private void accessGoogleDrive(String nick,String operation) throws IOException{
+        if(!isAuthorized){
+            Authorization.authorize();
+            Authorization.setNick(nick);
+        }
+        
+        switch(operation){
+            case "download":
+                DownloadFiles.getInstance().downloadFiles();
+                google_files = Authorization.getFilesList();
+                model_man.listFromGoogleTable();
+                break;
+            case "upload":
+                
+                break;
+            case "listFiles":
+                
+                break;
+        }
+        
     }
 
     private void animatePanelMove() {
@@ -827,6 +867,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             openNav.play();
         }
     }
+
     
     private class ModelManager{
 
@@ -917,6 +958,12 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         items_count.setText(String.valueOf(images.size()));
     }
     
+    public void listFromGoogleTable(){
+       images.clear();
+       google_files.forEach(image ->{
+           images.add(ENV.getEnvironmentVariable(Environment.TEMP_DIR)+File.separator+"joanne"+File.separator+image);
+       });
+    }
     
     private void listImages(String dir) {
          try {
@@ -1036,6 +1083,67 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         System.gc();
     }
         
+     private void generateDialog(Task<String> t) {
+            Dialog<ArrayList<String>> dialog = new Dialog<>();
+            dialog.setWidth(300);
+            dialog.setTitle("Sync with Google Drive");
+            dialog.setHeaderText("Google Drive Sync");
+            
+            ButtonType loginButtonType = new ButtonType("View", ButtonData.OK_DONE);
+            ButtonType cancelButtonType = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+            dialog.getDialogPane().getButtonTypes().addAll(loginButtonType, cancelButtonType);
+
+            VBox vbox = new VBox();
+            vbox.setSpacing(10);
+            vbox.setAlignment(Pos.CENTER);
+            vbox.setPrefWidth(dialog.getWidth());
+            vbox.getChildren().add(new Label("Wait, sync is in progress."));
+            ProgressBar p = new ProgressBar();
+            p.progressProperty().addListener(listener ->{
+                p.setProgress(t.getProgress());
+            });
+            vbox.getChildren().add(p);
+
+            // Enable/Disable login button depending on whether a username was entered.
+            Node loginButton = dialog.getDialogPane().lookupButton(loginButtonType);
+            loginButton.setDisable(true);
+
+            Node cancelButton = dialog.getDialogPane().lookupButton(loginButtonType);
+            // Do some validation (using the Java 8 lambda syntax).
+            cancelButton.setOnMouseClicked(event ->{
+                t.cancel(true);
+            });
+            
+            t.setOnCancelled(event ->{
+                DownloadFiles.getInstance().stop();
+            });
+            t.setOnSucceeded(success_evt ->{
+                loginButton.setDisable(false);
+            });
+            dialog.getDialogPane().setContent(vbox);
+
+
+            // Convert the result to a username-password-pair when the login button is clicked.
+            dialog.setResultConverter(dialogButton -> {
+                if (dialogButton == loginButtonType) {
+                    model_man.listFromGoogleTable();
+                    return images;
+                }
+                return null;
+            });
+
+            Optional<ArrayList<String>> result = dialog.showAndWait();
+
+            result.ifPresent(usernamePassword -> {
+               ObservableList list = FXCollections.observableArrayList(images);
+               image_list.setCellFactory(new CallbackImpl());
+               image_list.getItems().clear();
+               image_list.refresh();
+               image_list.setItems(list);
+               items_count.setText(String.valueOf(images.size()));
+            });
+    }
+    
         private int getIndex(){
             ListViewSkin<?> ts = (ListViewSkin<?>) image_list.getSkin();
             VirtualFlow<?> vf = (VirtualFlow<?>) ts.getChildren().get(0);

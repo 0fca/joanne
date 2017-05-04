@@ -69,7 +69,7 @@ public class Authorization {
      * @return an authorized Credential object.
      * @throws IOException
      */
-    private static void authorize() throws IOException {
+    public static void authorize() throws IOException {
         // Load client secrets.
         InputStream in = Authorization.class.getClass().getResourceAsStream("/gallery/configs/client_id.json");
         GoogleClientSecrets clientSecrets =
@@ -113,16 +113,18 @@ public class Authorization {
         // Print the names and IDs for up to 10 files.
         FileList result = service.files().list()
              .setPageSize(10)
+             .setQ("mimeType='image/jpeg'")
+             .setSpaces("drive")
              .setFields("nextPageToken, files(id, name)")
              .execute();
         List<File> files = result.getFiles();
         if (files == null || files.isEmpty()) {
             System.out.println("No files found.");
         } else {
-            System.out.println("Files:");
+            System.out.println("Downloading...");
             files.forEach((file) -> {
-               // System.out.printf("%s (%s)\n", file.getName(), file.getId());
                 NAMES.add(file.getName());
+                FILES_IDS.add(file.getId());
             });
         }
     }
@@ -133,11 +135,5 @@ public class Authorization {
     
     public static ArrayList<String> getFilesIds(){
         return FILES_IDS;
-    }
-    public static void main(String... args) throws IOException{
-        //authorize();
-        Authorization.listFiles();
-        Authorization.getFilesList();
-        DownloadFiles.downloadFiles();
     }
 }

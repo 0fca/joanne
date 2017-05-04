@@ -58,7 +58,7 @@
          <content>
             <BorderPane fx:id="border" cache="true" cacheHint="QUALITY" prefHeight="409.0" prefWidth="807.0">
                <center>
-                  <ImageView fx:id="image_view" cache="true" cacheHint="QUALITY" fitHeight="310.0" fitWidth="293.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER" />
+                  <ImageView fx:id="image_view" cacheHint="QUALITY" fitHeight="310.0" fitWidth="293.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER" />
                </center>
             </BorderPane>
          </content>
