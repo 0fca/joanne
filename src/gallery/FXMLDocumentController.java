@@ -52,11 +52,11 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
@@ -78,7 +78,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -87,7 +86,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -95,7 +93,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.Duration;
-import javafx.util.Pair;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -235,12 +232,15 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                System.gc();
                selection = image_list.getSelectionModel().getSelectedIndex();
                LAST_SELECTED = selection;
+               
                if(selection != -1&selection != images.indexOf(ACTUAL_SELECTED)){
+                   
                  Image loaded = image_man.getImage(images.get(selection));
                  model_man.setToImgView(loaded);
+                 
                  ImageProperties im = new ImageProperties();
                    try {
-                       System.out.println(images.get(selection));
+
                        model_man.setInofrmationToModel(im.getInformation(images.get(selection)));
                    } catch (IOException ex) {
                        Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
@@ -722,32 +722,18 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         });
         
         gd_sync.setOnAction(event ->{
-            
             TextInputDialog d = new TextInputDialog(ENV.getEnvironmentVariable(Environment.USER_NAME));
             Optional<String> opt = d.showAndWait();
-            Task<String> t = new Task<String>(){
-                @Override
-                protected String call() throws Exception {
-                    try {
-                        accessGoogleDrive(nick,"download");
-                        } catch (IOException ex) {
-                            Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    return "";
-                }
-            };
             
             opt.ifPresent(event2 ->{
                 if(!event2.isEmpty()){
                     nick = event2;
-                    Thread th = new Thread(t,"GoogleSyncThread");
-                    th.setDaemon(true);
-                    th.start();
-
-                    model_man.generateDialog(t);
+                    GoogleService g  = new GoogleService();
+                    
+                    g.start();
+                    model_man.generateDialog(g);
                 }
             });
-            
         });
         
         codes.setOnAction(event ->{
@@ -870,7 +856,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
 
     
     private class ModelManager{
-
         private void addFavoritesToList() throws FileNotFoundException, IOException {
             FileInputStream in; 
             Properties p = new Properties();
@@ -961,7 +946,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     public void listFromGoogleTable(){
        images.clear();
        google_files.forEach(image ->{
-           images.add(ENV.getEnvironmentVariable(Environment.TEMP_DIR)+File.separator+"joanne"+File.separator+image);
+           images.add(ENV.getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"google_drive"+File.separator+image);
        });
     }
     
@@ -1083,7 +1068,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         System.gc();
     }
         
-     private void generateDialog(Task<String> t) {
+     private void generateDialog(GoogleService t) {
             Dialog<ArrayList<String>> dialog = new Dialog<>();
             dialog.setWidth(300);
             dialog.setTitle("Sync with Google Drive");
@@ -1099,26 +1084,29 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             vbox.setPrefWidth(dialog.getWidth());
             vbox.getChildren().add(new Label("Wait, sync is in progress."));
             ProgressBar p = new ProgressBar();
-            p.progressProperty().addListener(listener ->{
-                p.setProgress(t.getProgress());
-            });
+            p.setPrefWidth(300);
+
             vbox.getChildren().add(p);
 
             // Enable/Disable login button depending on whether a username was entered.
             Node loginButton = dialog.getDialogPane().lookupButton(loginButtonType);
             loginButton.setDisable(true);
 
-            Node cancelButton = dialog.getDialogPane().lookupButton(loginButtonType);
-            // Do some validation (using the Java 8 lambda syntax).
+            Node cancelButton = dialog.getDialogPane().lookupButton(cancelButtonType);
             cancelButton.setOnMouseClicked(event ->{
-                t.cancel(true);
+                t.cancel();
+                DownloadFiles.getInstance().stop();
             });
             
             t.setOnCancelled(event ->{
-                DownloadFiles.getInstance().stop();
+                System.out.println("Downloading cancelled.");
+                t.cancel();
             });
+            
             t.setOnSucceeded(success_evt ->{
+                System.out.println("Succeded.");
                 loginButton.setDisable(false);
+                cancelButton.setDisable(true);
             });
             dialog.getDialogPane().setContent(vbox);
 
@@ -1345,5 +1333,31 @@ public class FXMLDocumentController extends Gallery implements Initializable {
           }
       }
   }
+  
+  private class GoogleService extends Service<Void> {
+        @Override
+        protected Task<Void> createTask() {
+            return new Task<Void>(){
+                @Override
+                protected Void call() throws Exception {
+                    try {
+                        accessGoogleDrive(nick,"download");
+                    } catch (IOException ex) {
+                        Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    return null;
+                }
+                
+                @Override
+                protected void cancelled(){
+                    super.cancelled();
+                    DownloadFiles.getInstance().stop();
+                    this.cancel(true);
+                }
+                
+            };
+        }
+    }
+  
 }
 

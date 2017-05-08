@@ -10,6 +10,8 @@ import gallery.systemproperties.EnvVars;
 import gallery.xml.XMLManager;
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -36,7 +38,7 @@ public class Gallery extends Application {
         stage.setMinHeight(650);
         Scene scene = new Scene(root);
         
-        Alert a = new Alert(AlertType.ERROR);
+        //Alert a = new Alert(AlertType.ERROR);
        
         scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         
@@ -48,11 +50,9 @@ public class Gallery extends Application {
         stage.setTitle("Joanne");
         stage.show();
         this.stage = stage;
-        EnvVars e = new EnvVars();
-        String temp = e.getEnvironmentVariable(Environment.TEMP_DIR);
-        
-        File tmp = new File(temp+File.separator+"joanne");
-        System.out.println(tmp.mkdir());
+        if(new File(new EnvVars().getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"google_drive").exists()){        
+            System.out.println(Files.createDirectories(Paths.get(new EnvVars().getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"google_drive")));
+        }
     }
 
     /**

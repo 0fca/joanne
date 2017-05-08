@@ -18,6 +18,9 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.*;
 import com.google.api.services.drive.Drive;
+import gallery.enums.Environment;
+import gallery.systemproperties.EnvVars;
+import gallery.xml.JSONController;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +57,8 @@ public class Authorization {
 
     private static ArrayList<String> NAMES = new ArrayList<>();
     private static ArrayList<String> FILES_IDS = new ArrayList<>();
+    private static String DATE;
+    private static EnvVars ENV = new EnvVars();
     static {
         try {
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
@@ -109,22 +114,37 @@ public class Authorization {
 
     public static void listFiles() throws IOException{
         Drive service = getDriveService();
-       
-        // Print the names and IDs for up to 10 files.
-        FileList result = service.files().list()
-             .setPageSize(10)
-             .setQ("mimeType='image/jpeg'")
-             .setSpaces("drive")
-             .setFields("nextPageToken, files(id, name)")
-             .execute();
+        if(new java.io.File(ENV.getEnvironmentVariable(Environment.USER_HOME)+java.io.File.separator+"joanne"+java.io.File.separator+"sync_data.json").exists()){
+            //DATE = JSONController.getInstance().readJson().get(0);
+            System.out.println(DATE);
+        }
+        
+          FileList result = service.files().list()
+            .setQ("mimeType contains 'image/'")
+            .setSpaces("drive")
+            .setFields("nextPageToken, files(id, name, modifiedTime)")
+            .execute();
+
         List<File> files = result.getFiles();
+        
         if (files == null || files.isEmpty()) {
             System.out.println("No files found.");
         } else {
             System.out.println("Downloading...");
+            
             files.forEach((file) -> {
-                NAMES.add(file.getName());
-                FILES_IDS.add(file.getId());
+                //System.out.println(file);
+                long l = file.getModifiedTime().getValue();
+                java.io.File f = new java.io.File(ENV.getEnvironmentVariable(Environment.USER_HOME)+java.io.File.separator+"joanne"+java.io.File.separator+"google_drive"+java.io.File.separator+file.getName());
+                long l2 = 0;
+                
+                if(f.exists()){
+                    l2 = f.lastModified();
+                }
+                if(l > l2){
+                    NAMES.add(file.getName());
+                    FILES_IDS.add(file.getId());
+                }
             });
         }
     }

@@ -5,13 +5,18 @@
  */
 package gallery.googlesync;
 
+import com.google.api.client.util.DateTime;
 import com.google.api.services.drive.Drive;
+import gallery.enums.Environment;
 import static gallery.googlesync.Authorization.getDriveService;
 import gallery.systemproperties.EnvVars;
+import gallery.xml.JSONController;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,16 +42,27 @@ public class DownloadFiles {
         Authorization.listFiles();
         ArrayList<String> ids = Authorization.getFilesIds();
         ArrayList<String> names = Authorization.getFilesList();
+        ArrayList<String> records = new ArrayList<>();
+        Date d = new Date();
+        long l_date = d.getTime();
+ 
+        records.add(String.valueOf(l_date));
+        
         ids.forEach(fileId ->{
-            File out_dir = new File("/tmp/joanne/"+names.get(ids.indexOf(fileId)));
+            
+            File out_dir = new File(ENV.getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"google_drive"+File.separator+names.get(ids.indexOf(fileId)));
             try {
                 fs = new FileOutputStream(out_dir);
                 driveService.files().get(fileId)
                 .executeMediaAndDownloadTo(fs);
+                
+                records.add(fileId);
             } catch (IOException ex) {
                 Logger.getLogger(DownloadFiles.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
+        JSONController.getInstance().writeJson(records);
+        
     }
     
     public void stop(){
@@ -54,6 +70,7 @@ public class DownloadFiles {
             if(fs != null){
                 fs.flush();
                 fs.close();
+                System.out.println("FS closed.");
             }
         } catch (IOException ex) {
             Logger.getLogger(DownloadFiles.class.getName()).log(Level.SEVERE, null, ex);
