@@ -40,30 +40,7 @@ import org.w3c.dom.NodeList;
  public class ImageManager{
      private ErrorLogger e = new ErrorLogger();   
      private EnvVars env = new EnvVars();
-     
-      public ArrayList<String> loadFolders() throws FileNotFoundException, IOException {
-        Properties p = new Properties();
-        File f = new File("folders.xml");
-        ArrayList<String> paths = new ArrayList<>();
-        System.out.print(f.getAbsoluteFile());
-        if(!new File(f.getAbsolutePath()).exists()){
-            
-            String os = System.getProperty("os.name");
-            if(os.equals("Linux")){
-                f = new File("/home/"+System.getProperty("user.name")+"/folders.xml").getAbsoluteFile();
-            }else{
-                if(os.contains("Windows")){
-                  f = new File("C:\\Users\\"+System.getProperty("user.name")+"\\folders.xml").getAbsoluteFile(); 
-                }   
-            }
-        }
-        FileInputStream in = new FileInputStream(f);
-        p.loadFromXML(in);
-        p.forEach((x,y)->{
-            paths.add(x.toString());
-        });
-        return paths;
-    }
+    
 
     public BufferedImage readGif(String path) throws IOException{
     ImageReader reader = (ImageReader) ImageIO.getImageReadersByFormatName("gif").next();

@@ -16,8 +16,6 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
@@ -42,7 +40,7 @@ public class Gallery extends Application {
        
         scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         
-        stage.getIcons().add(new Image(new URL(getClass().getResource("images/iv.png").toExternalForm()).toString(),16,16,true,true));
+        stage.getIcons().add(new Image(new URL(getClass().getResource("/gallery/images/iv.png").toExternalForm()).toString(),16,16,true,true));
         stage.setOnCloseRequest(event ->{
             System.exit(0);
         });
@@ -53,6 +51,7 @@ public class Gallery extends Application {
         if(new File(new EnvVars().getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"google_drive").exists()){        
             System.out.println(Files.createDirectories(Paths.get(new EnvVars().getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"google_drive")));
         }
+        new File("/tmp/joanne").mkdir();
     }
 
     /**

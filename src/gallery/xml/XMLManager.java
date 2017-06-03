@@ -18,7 +18,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.function.BiConsumer;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 /**
@@ -28,49 +27,66 @@ import javafx.collections.ObservableList;
 public class XMLManager {
     private static volatile XMLManager XML;
     private Properties p = new Properties();
+    private static String PATH = new EnvVars().getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"folders.xml";
+    private static String PATHF = new EnvVars().getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"favorites.xml";
+     
     public static synchronized XMLManager getInstance(){
         if(XML == null){
             XML = new XMLManager();
         }
         return XML;
     }
-    public Properties getFoldersList() throws FileNotFoundException, IOException{
+    
+    private Properties getFoldersList() throws FileNotFoundException, IOException{
         Properties p = new Properties();
                 
-                if(Files.exists(new File("folders.xml").toPath())){
-                     FileInputStream in = new FileInputStream(new File("folders.xml"));
-                    p.loadFromXML(in);
-                    BiConsumer<Object,Object> bi = (x,y) ->{
-                        p.getProperty(x.toString(), new File(y.toString()).getName());
-                    };
-                    p.forEach(bi);
+            if(Files.exists(new File(PATH).toPath())){
+                FileInputStream in = new FileInputStream(new File(PATH));
+                p.loadFromXML(in);
+                BiConsumer<Object,Object> bi = (x,y) ->{
+                    p.getProperty(x.toString(), new File(y.toString()).getName());
+                };
+                p.forEach(bi);
 
-                }
-                return p;
+            }
+            return p;
+    }
+    
+    public ArrayList<String> getFolderList() throws FileNotFoundException, IOException{
+        ArrayList<String> a = new ArrayList<>();
+                
+            if(Files.exists(new File(PATH).toPath())){
+                FileInputStream in = new FileInputStream(new File(PATH));
+                p.loadFromXML(in);
+                
+                p.forEach((x,y) ->{
+                    a.add(x.toString());
+                    System.out.println(y);
+                });
+
+            }
+            return a;
     }
     
     public boolean saveFoldersList(ArrayList<String> list) throws FileNotFoundException, IOException{
             Properties p = getFoldersList(); 
-                String pa = "";
-                if(new File(pa).isFile()){
-                    pa = new File(pa).getParent();
-                }
-                FileOutputStream f = new FileOutputStream(new File("folders.xml"));
-                if(!p.containsKey(pa)){
-                    p.setProperty(new File(pa).getAbsolutePath(),new File(pa).getName());
-                }else{
-                    return false;
-                }
-                p.storeToXML(f,null);
-                ObservableList<String> s = FXCollections.observableArrayList(list);
-                s.add(0, new File(pa).getName());
-                return true;
+            String pa = "";
+            if(new File(pa).isFile()){
+                pa = new File(pa).getParent();
+            }
+            FileOutputStream f = new FileOutputStream(new File(PATH));
+            if(!p.containsKey(pa)){
+                p.setProperty(new File(pa).getAbsolutePath(),new File(pa).getName());
+            }else{
+                return false;
+            }
+            p.storeToXML(f,null);
+            return true;
     }
     
-    
     public void createFavoritesList(ObservableList o, Object selectedItem, String actual,ArrayList<String> images) throws FileNotFoundException, IOException{        
-       if(!Files.exists(new File(System.getProperty("user.home")+File.separatorChar+"favorites.xml").toPath())){
-           FileOutputStream f = new FileOutputStream(new File(System.getProperty("user.home")+File.separatorChar+"favorites.xml"));
+       if(!Files.exists(new File(PATHF).toPath())){
+           FileOutputStream f = new FileOutputStream(new File(PATHF));
            Properties p = new Properties();
            
           o.forEach(x ->{
@@ -94,7 +110,7 @@ public class XMLManager {
               }
           });
        }else{
-           FileInputStream fin = new FileInputStream(new File(System.getProperty("user.home")+File.separatorChar+"favorites.xml"));
+           FileInputStream fin = new FileInputStream(new File(PATHF));
            
            Properties p = new Properties();
            
@@ -118,7 +134,7 @@ public class XMLManager {
                }
                System.out.print(new File(images.get(Integer.parseInt(x1.toString()))).getName());
            });
-           FileOutputStream f = new FileOutputStream(new File(System.getProperty("user.home")+File.separatorChar+"favorites.xml"));
+           FileOutputStream f = new FileOutputStream(new File(PATHF));
            p.storeToXML(f, null);
            f.flush();
            f.close();
@@ -126,8 +142,8 @@ public class XMLManager {
     }
     
     public boolean removeFromFavorites(ObservableList o, Object selectedItem, String actual,ArrayList<String> images) throws FileNotFoundException, IOException{
-       if(Files.exists(new File(System.getProperty("user.home")+File.separatorChar+"favorites.xml").toPath())){
-           FileInputStream fin = new FileInputStream(new File(System.getProperty("user.home")+File.separatorChar+"favorites.xml"));
+       if(Files.exists(new File(PATHF).toPath())){
+           FileInputStream fin = new FileInputStream(new File(PATHF));
            
            Properties p = new Properties();
            
@@ -147,7 +163,7 @@ public class XMLManager {
                    }
                    fin.close();
 
-                   FileOutputStream f = new FileOutputStream(new File(System.getProperty("user.home")+File.separatorChar+"favorites.xml"));
+                   FileOutputStream f = new FileOutputStream(new File(PATHF));
                    p.storeToXML(f, null);
                    f.flush();
                    f.close();

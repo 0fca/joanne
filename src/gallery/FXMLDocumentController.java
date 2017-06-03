@@ -5,6 +5,15 @@
  */
 package gallery;
 
+import com.drew.imaging.bmp.BmpMetadataReader;
+import com.drew.imaging.gif.GifMetadataReader;
+import com.drew.imaging.jpeg.JpegMetadataReader;
+import com.drew.imaging.jpeg.JpegProcessingException;
+import com.drew.imaging.png.PngMetadataReader;
+import com.drew.imaging.png.PngProcessingException;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifReader;
 import com.sun.javafx.scene.control.skin.ListViewSkin;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 import gallery.enums.Environment;
@@ -27,15 +36,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -85,7 +95,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -112,8 +121,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private Parent root;
     @FXML
     private Label prev_lbl,next_lbl,title,menu_label,items_count,size,elements,rotate_right,rotate_left;
-    @FXML
-    private BorderPane border;
     @FXML
     private ComboBox folders;
     @FXML
@@ -159,6 +166,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     EnvVars ENV = new EnvVars();
     private boolean isAuthorized = false;
     private String nick = "";
+    
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         FileWriter fw;
@@ -183,7 +191,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         run.start();
         
         try {
-            paths = image_man.loadFolders();
+            paths = XML.getFolderList();
             paths.forEach(item ->{
                 folders.getItems().add(new File(item).getName());
             });
@@ -232,23 +240,38 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                System.gc();
                selection = image_list.getSelectionModel().getSelectedIndex();
                LAST_SELECTED = selection;
+               ACTUAL_SELECTED = images.get(selection);
                
-               if(selection != -1&selection != images.indexOf(ACTUAL_SELECTED)){
+               if(selection != -1&selection == images.indexOf(ACTUAL_SELECTED)){
                    
                  Image loaded = image_man.getImage(images.get(selection));
                  model_man.setToImgView(loaded);
                  
                  ImageProperties im = new ImageProperties();
+                 ArrayList inf = new ArrayList();
                    try {
-
-                       model_man.setInofrmationToModel(im.getInformation(images.get(selection)));
+                       //System.out.println(new File(images.get(selection)).getParent());
+                       im.handleFileData(new File(images.get(selection)));
+                       if(Files.probeContentType(new File(images.get(selection)).toPath()).contains("gif")){
+                          ArrayList tmp = im.getInformation();
+                          for(int i = 0; i < 15; i++){
+                              inf.add(tmp.get(i));
+                          }
+                          tmp.clear();
+                       }else{
+                          inf = im.getInformation();
+                       }
+                       model_man.setInofrmationToModel(inf);
+                       
                    } catch (IOException ex) {
                        Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
                        a.setAlertType(AlertType.ERROR);
                        a.setTitle("Rename");
-                       a.setHeaderText("Error while renaming the file.");
+                       a.setHeaderText("Error while vieweing information.");
                        a.setContentText("Error code: "+e.getErrorInfo(ex)+"\n"+e.getErrorMessage(ex));
                        a.showAndWait();
+                   } catch (JpegProcessingException ex) {
+                       Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
                    }
                }
                
@@ -270,8 +293,9 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         save.setOnAction((event) ->{
             ArrayList<String> list = new ArrayList<>();
             XMLManager xml = new XMLManager();
-            
+            list.add(PATH);
             folders.getItems().forEach(x ->{
+                System.out.println(x);
                 list.add(x.toString());
             });
             
@@ -331,7 +355,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             Properties p = new Properties();
             FileInputStream in;
             try {
-                in = new FileInputStream("folders.xml");
+                in = new FileInputStream(new EnvVars().getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"folders.xml");
                 p.loadFromXML(in);
                 
                 in.close();
@@ -341,7 +365,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                        p.remove(get);
                     }
                 }
-                FileOutputStream f = new FileOutputStream("folders.xml");
+                FileOutputStream f = new FileOutputStream(new EnvVars().getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"folders.xml");
                 p.storeToXML(f, null);
                 f.close();
                 ObservableList<String> folder = folders.getItems();
@@ -859,9 +883,9 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         private void addFavoritesToList() throws FileNotFoundException, IOException {
             FileInputStream in; 
             Properties p = new Properties();
-            
-            if(Files.exists(new File(System.getProperty("user.home")+File.separatorChar+"favorites.xml").toPath())){
-                in = new FileInputStream(new File(System.getProperty("user.home")+File.separatorChar+"favorites.xml"));
+            System.out.println(ACTUAL_SELECTED);
+            if(Files.exists(new File(new EnvVars().getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"favorites.xml").toPath())){
+                in = new FileInputStream(new File(new EnvVars().getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"favorites.xml"));
                 p.loadFromXML(in);
                 try{
                 images.clear();
@@ -906,7 +930,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     }    
         
     private void selectImg(int index){
-        image_list.getSelectionModel().select(index);
+        image_list.getSelectionModel().clearAndSelect(index);
         image_list.scrollTo(index);
     }
    
@@ -955,11 +979,9 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             if(!dir.isEmpty()){
                     Stream<Path> list = Files.list(new File(dir).toPath());
                     
-                    ObservableList<String> o = image_list.getItems();
-                    o.clear();
-                    
+                    ObservableList<String> o = FXCollections.observableArrayList();
                     image_list.getItems().clear();
-                    image_list.refresh();
+                   
                     images.clear();
                     image_list.setCellFactory(new CallbackImpl());
                     Consumer<Path> c = x -> {
@@ -984,6 +1006,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                     a.showAndWait();
             }
        items_count.setText(String.valueOf(images.size()));
+       image_list.refresh();
        System.gc();
     }
         
@@ -1142,14 +1165,14 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             return out;
         }
         
-       private void trayInit() {
+       private void trayInit() throws MalformedURLException {
         if (!SystemTray.isSupported()) {
             System.out.println("SystemTray is not supported");
             return;
         }
         
         final PopupMenu popup = new PopupMenu();
-        final TrayIcon trayIcon = new TrayIcon(new ImageIcon("/gallery/images/iv.png").getImage().getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH));
+        final TrayIcon trayIcon = new TrayIcon(new ImageIcon(new URL(getClass().getResource("/gallery/images/iv.png").toExternalForm()).toString()).getImage().getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH));
         final SystemTray tray = SystemTray.getSystemTray();
         trayIcon.addMouseListener(new MouseListener(){
             @Override
@@ -1259,14 +1282,12 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                         setGraphic(im);
                         setAlignment(Pos.CENTER);
                     }else{
-                        
                         BufferedImage i = image_man.readGif(item);
                         ImageIO.write(i, "GIF", new File(ENV.getEnvironmentVariable(Environment.TEMP_DIR)+File.separator+"joanne"+File.separator+new File(item).getName()));
                         Image im2 = new Image("file:///"+ENV.getEnvironmentVariable(Environment.TEMP_DIR)+File.separator+"joanne"+File.separator+new File(item).getName(),64,64,true,true);
                         im = new ImageView(im2);
                         setGraphic(im);
                         setAlignment(Pos.CENTER);
-
                     }
                 }
                  System.gc();
@@ -1282,24 +1303,64 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             return new CellImageAdd();
         }
     }
+    
    private class ImageProperties {
-      private ArrayList<String> getInformation(String path) throws IOException{
-          ArrayList<String> a = new ArrayList<>();
-          File f = new File(path);
-          String name = f.getName();
-          long size = f.length()/1024;
-          long tl = f.lastModified();
-          SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
-          String ft = sdf.format(tl);
-          String user = Files.getOwner(new File(path).toPath(), LinkOption.NOFOLLOW_LINKS).getName();
-          a.add("Name: "+name);
-          a.add("Size: "+String.valueOf(size)+"kB");
-          a.add("Original dimension: "+image_view.getImage().getWidth()+","+image_view.getImage().getHeight());
-          a.add("Viewed dimension: "+image_view.getFitWidth()+","+image_view.getFitHeight());
-          a.add("Date modified: "+ft);
-          a.add("Owner: "+user);
-          return a;
+      private ArrayList<String> out = new ArrayList<>();
+      private Iterable readers = null;
+      
+      private ArrayList<String> getInformation() throws IOException{
+          return out;
       }
+      
+      private void createMetadataFormatList(String[] formats){
+           readers = Arrays.asList(new ExifReader());
+      }
+
+      private void handleFileData(File file) throws JpegProcessingException, IOException{
+            createMetadataFormatList(null);
+            
+            if(file.isFile()){
+                Metadata metadata = readMetdataFor(file);
+                setToArray(metadata);
+            }
+            
+      }
+      
+      private void setToArray(Metadata metadata){   
+        for (Directory directory : metadata.getDirectories()) {
+            directory.getTags().forEach((tag) -> {
+                if (!directory.hasErrors()) {
+                    out.add(tag.toString());
+                    System.out.println(tag.toString());
+                }
+            });
+        }
+      }
+
+        private Metadata readMetdataFor(File f) throws JpegProcessingException {
+          Metadata m = null;
+          try {
+              String mime = Files.probeContentType(f.toPath());
+              System.out.println(mime);
+              switch(mime){
+                  case "image/jpeg":
+                      m = JpegMetadataReader.readMetadata(f,readers);
+                      break;
+                  case "image/png":
+                      m = PngMetadataReader.readMetadata(f);
+                      break;
+                  case "image/gif":
+                      m = GifMetadataReader.readMetadata(f);
+                      break;
+                  case "image/bmp":
+                      m = BmpMetadataReader.readMetadata(f);
+                      break;
+              }
+          } catch (IOException | PngProcessingException ex) {
+              Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
+          }
+          return m;
+        }
    }
   
   public class GCRunner extends Thread implements Runnable{
@@ -1319,7 +1380,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
               Runtime r = Runtime.getRuntime();
               long free = r.freeMemory()/(1024*1024);
               long tot = r.totalMemory()/(1024*1024);
-              if(tot > 50L){
+              if(free < 30L){
                   System.gc();
                   System.out.println("GC.");
                   System.out.println(free+" MB");
