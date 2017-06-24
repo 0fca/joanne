@@ -5,15 +5,7 @@
  */
 package gallery;
 
-import com.drew.imaging.bmp.BmpMetadataReader;
-import com.drew.imaging.gif.GifMetadataReader;
-import com.drew.imaging.jpeg.JpegMetadataReader;
 import com.drew.imaging.jpeg.JpegProcessingException;
-import com.drew.imaging.png.PngMetadataReader;
-import com.drew.imaging.png.PngProcessingException;
-import com.drew.metadata.Directory;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.exif.ExifReader;
 import com.sun.javafx.scene.control.skin.ListViewSkin;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 import gallery.enums.Environment;
@@ -28,7 +20,6 @@ import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,12 +31,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -102,10 +91,13 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.Duration;
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import gallery.image.ImageManager.ImageProperties;
+import java.awt.image.BufferedImage;
+import java.nio.file.Paths;
+import javax.imageio.ImageIO;
 
 /**
  * @author Obsidiam
@@ -154,7 +146,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private Image prev_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/prev.png"));
     private Image menu_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/menu.png"),32,32,true,true);
     private Image gd_sync_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/gd_icon48x48.png"),32,32,true,true);
-    //private Image iv_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/iv.png"),48,48,true,true);
+    private Image iv_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/iv.png"),48,48,true,true);
     private Image rotate_right_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/rotate_right.png"),32,32,true,true);
     private Image rotate_left_img = new Image(FXMLDocumentController.class.getResourceAsStream("images/rotate_left.png"),32,32,true,true);
     private ModelManager model_man = new ModelManager();
@@ -166,6 +158,12 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     EnvVars ENV = new EnvVars();
     private boolean isAuthorized = false;
     private String nick = "";
+    
+    {
+        Runtime r = Runtime.getRuntime();
+        r.traceInstructions(true);
+        r.traceMethodCalls(true);
+    }
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -247,7 +245,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                  Image loaded = image_man.getImage(images.get(selection));
                  model_man.setToImgView(loaded);
                  
-                 ImageProperties im = new ImageProperties();
+                 ImageProperties im = ImageProperties.getOuter();
                  ArrayList inf = new ArrayList();
                    try {
                        //System.out.println(new File(images.get(selection)).getParent());
@@ -261,7 +259,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                        }else{
                           inf = im.getInformation();
                        }
-                       model_man.setInofrmationToModel(inf);
+                       model_man.setInformationToModel(inf);
                        
                    } catch (IOException ex) {
                        Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
@@ -278,10 +276,34 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             }
         });
 
+        image_list.setOnScrollFinished(event ->{
+            System.out.println("Finished.");
+        });
+        image_list.setOnKeyPressed(event ->{
+            if(event.getCode() == KeyCode.RIGHT){
+                if(selection != -1&selection < images.size()){
+                  selection = selection+1;
+                  if(selection != -1){
+                  Image i = image_man.getImage(images.get(selection));
+                  model_man.setToImgView(i);
+                  }
+                }
+            }
+            if(event.getCode() == KeyCode.LEFT){
+                if(selection != -1){
+                  selection = selection-1;
+                  if(selection != -1){
+                  Image i = image_man.getImage(images.get(selection));
+                  model_man.setToImgView(i);
+                  }
+                }
+            }
+        });
+        
+        
+        
         image_view.setOnMouseClicked(event ->{
-            int count = event.getClickCount();
-            
-            if(count == 2){
+            if(event.getClickCount() == 2){
                 fullscreen.fire();
             }
         });
@@ -313,13 +335,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         
         folders.setOnAction((event) ->{
             Object o = folders.getSelectionModel().getSelectedItem();
-            String name = o.toString();
-            paths.forEach(x ->{
-               if(name.equals(new File(x).getName())){
-                  model_man.listImages(x);
-                  PATH = x;
-               } 
-            });  
+            model_man.listImages(paths.get(folders.getItems().indexOf(o))); 
         });
         
         pane.setOnMouseClicked(event ->{
@@ -342,7 +358,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         about.setOnAction(event ->{
             a.setAlertType(AlertType.INFORMATION);
             a.setHeaderText("Joanne");
-            a.setContentText("Joanne\nAuthor: Obsidiam\nver:"+ver.selectAndGetVersion(0)+"\nLicense:GNU GPL v.3.0\n");
+            a.setContentText("Joanne\nAuthor: Obsidiam\nver:"+ver.selectAndGetVersion(0)+"\nLicense:GNU GPL v.3.0 or newer\n");
             a.showAndWait();
         });
         
@@ -433,28 +449,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         next_lbl.setOnMouseExited(event ->{
            next_lbl.setGraphic(null);
         });
-        
-        image_list.setOnKeyPressed(event ->{
-            if(event.getCode() == KeyCode.RIGHT){
-                if(selection != -1&selection < images.size()){
-                  selection = selection+1;
-                  if(selection != -1){
-                  Image i = image_man.getImage(images.get(selection));
-                  model_man.setToImgView(i);
-                  }
-                }
-            }
-            if(event.getCode() == KeyCode.LEFT){
-                if(selection != -1){
-                  selection = selection-1;
-                  if(selection != -1){
-                  Image i = image_man.getImage(images.get(selection));
-                  model_man.setToImgView(i);
-                  }
-                }
-            }
-        });
-        
+
         root.setOnKeyTyped(event ->{
             if(selection != -1){
                 if(event.getCharacter().equals("+")){
@@ -486,12 +481,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         image_view.setOnKeyPressed(event ->{
                fullscreen.fire();
         });
-       
-        ObservableList<String> s = FXCollections.observableArrayList();
-        for(int i = 50; i<1000;i+=50){
-            String percent = String.valueOf(i);
-            s.add(percent);
-        }
         
         reset.setOnAction(event ->{
             if(selection != -1){ 
@@ -806,10 +795,10 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-//        image_list.addEventFilter(javafx.scene.input.ScrollEvent.SCROLL, event -> {
-//            //System.out.println("Scrolling.");
-//            //image_list.setCellFactory(new CallbackImpl());
-//        });
+        image_list.addEventFilter(javafx.scene.input.ScrollEvent.SCROLL_FINISHED, event -> {
+            System.out.println("Scroll finished.");
+            System.gc();
+        });
 
         scroll.setPannable(true);
         
@@ -943,7 +932,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         listFromTable();
     }
     
-    private void setInofrmationToModel(ArrayList<String> a){
+    private void setInformationToModel(ArrayList<String> a){
         ObservableList<String> l = FXCollections.observableArrayList(a);
         information.setItems(l);
         information.refresh();
@@ -978,13 +967,10 @@ public class FXMLDocumentController extends Gallery implements Initializable {
          try {
             if(!dir.isEmpty()){
                     Stream<Path> list = Files.list(new File(dir).toPath());
-                    
                     ObservableList<String> o = FXCollections.observableArrayList();
                     image_list.getItems().clear();
-                   
                     images.clear();
-                    image_list.setCellFactory(new CallbackImpl());
-                    Consumer<Path> c = x -> {
+                    list.forEach(x -> {
                         try {
                             if(Files.probeContentType(new File(x.toString()).toPath()).contains("image/")){
                                 o.add(x.toString());
@@ -993,9 +979,9 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                         } catch (IOException ex) {
                             Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                    };
+                    });
                     image_list.setItems(o);
-                    list.forEach(c);
+                    image_list.setCellFactory(new CallbackImpl());
             }
             }catch (IOException ex) {
                     Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
@@ -1172,7 +1158,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         }
         
         final PopupMenu popup = new PopupMenu();
-        final TrayIcon trayIcon = new TrayIcon(new ImageIcon(new URL(getClass().getResource("/gallery/images/iv.png").toExternalForm()).toString()).getImage().getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH));
+        final TrayIcon trayIcon = new TrayIcon(new ImageIcon(new URL(getClass().getResource("/gallery/images/iv.png").toExternalForm()).toString()).getImage());
         final SystemTray tray = SystemTray.getSystemTray();
         trayIcon.addMouseListener(new MouseListener(){
             @Override
@@ -1256,7 +1242,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
               size.setText(String.valueOf((zoom.get()/X)*100));
               image_view.setFitHeight(zoom.get());
               image_view.setFitWidth(zoom.get());
-              //System.gc();
         }
 
         private void rotate() {
@@ -1290,10 +1275,9 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                         setAlignment(Pos.CENTER);
                     }
                 }
-                 System.gc();
                }catch(IOException e){
                }
-            }
+}
         }
     }
 
@@ -1304,64 +1288,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         }
     }
     
-   private class ImageProperties {
-      private ArrayList<String> out = new ArrayList<>();
-      private Iterable readers = null;
-      
-      private ArrayList<String> getInformation() throws IOException{
-          return out;
-      }
-      
-      private void createMetadataFormatList(String[] formats){
-           readers = Arrays.asList(new ExifReader());
-      }
-
-      private void handleFileData(File file) throws JpegProcessingException, IOException{
-            createMetadataFormatList(null);
-            
-            if(file.isFile()){
-                Metadata metadata = readMetdataFor(file);
-                setToArray(metadata);
-            }
-            
-      }
-      
-      private void setToArray(Metadata metadata){   
-        for (Directory directory : metadata.getDirectories()) {
-            directory.getTags().forEach((tag) -> {
-                if (!directory.hasErrors()) {
-                    out.add(tag.toString());
-                    System.out.println(tag.toString());
-                }
-            });
-        }
-      }
-
-        private Metadata readMetdataFor(File f) throws JpegProcessingException {
-          Metadata m = null;
-          try {
-              String mime = Files.probeContentType(f.toPath());
-              System.out.println(mime);
-              switch(mime){
-                  case "image/jpeg":
-                      m = JpegMetadataReader.readMetadata(f,readers);
-                      break;
-                  case "image/png":
-                      m = PngMetadataReader.readMetadata(f);
-                      break;
-                  case "image/gif":
-                      m = GifMetadataReader.readMetadata(f);
-                      break;
-                  case "image/bmp":
-                      m = BmpMetadataReader.readMetadata(f);
-                      break;
-              }
-          } catch (IOException | PngProcessingException ex) {
-              Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
-          }
-          return m;
-        }
-   }
+   
   
   public class GCRunner extends Thread implements Runnable{
       private Thread TH;
@@ -1376,20 +1303,22 @@ public class FXMLDocumentController extends Gallery implements Initializable {
       
       @Override
       public void run(){
+          Runtime r = Runtime.getRuntime();
           while(Thread.currentThread() == TH){
-              Runtime r = Runtime.getRuntime();
-              long free = r.freeMemory()/(1024*1024);
-              long tot = r.totalMemory()/(1024*1024);
-              if(free < 30L){
-                  System.gc();
-                  System.out.println("GC.");
-                  System.out.println(free+" MB");
-                  System.out.println(tot+" MB");
-              }
-              try {
-                  Thread.sleep(5000);
-              } catch (InterruptedException ex) {
-                  Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
+              if(!image_list.isHover()){
+                  long free = r.freeMemory()/(1024*1024);
+                  long tot = r.totalMemory()/(1024*1024);
+                  if(tot > 40L){
+                      System.gc();
+                      System.out.println("GC.");
+                      System.out.println(free+" MB");
+                      System.out.println(tot+" MB");
+                  }
+                  try {
+                      Thread.sleep(5000);
+                  } catch (InterruptedException ex) {
+                      Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
+                  }
               }
           }
       }

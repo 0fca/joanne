@@ -63,7 +63,7 @@
             </BorderPane>
          </content>
       </ScrollPane>
-      <ListView fx:id="image_list" cacheHint="QUALITY" layoutY="576.0" orientation="HORIZONTAL" prefHeight="103.0" prefWidth="916.0" style="-fx-background-color: #00BCD4;" AnchorPane.bottomAnchor="29.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+      <ListView fx:id="image_list" cache="true" cacheHint="SPEED" layoutY="576.0" orientation="HORIZONTAL" prefHeight="103.0" prefWidth="916.0" style="-fx-background-color: #00BCD4;" AnchorPane.bottomAnchor="29.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <contextMenu>
             <ContextMenu fx:id="context" />
          </contextMenu></ListView>

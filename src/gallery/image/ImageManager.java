@@ -5,6 +5,15 @@
  */
 package gallery.image;
 
+import com.drew.imaging.bmp.BmpMetadataReader;
+import com.drew.imaging.gif.GifMetadataReader;
+import com.drew.imaging.jpeg.JpegMetadataReader;
+import com.drew.imaging.jpeg.JpegProcessingException;
+import com.drew.imaging.png.PngMetadataReader;
+import com.drew.imaging.png.PngProcessingException;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.bmp.BmpReader;
 import gallery.ErrorLogger;
 import gallery.systemproperties.EnvVars;
 import java.awt.Color;
@@ -12,13 +21,9 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Optional;
-import java.util.Properties;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TextInputDialog;
@@ -32,14 +37,23 @@ import javax.imageio.stream.ImageInputStream;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import com.drew.metadata.exif.ExifReader;
+import com.drew.metadata.iptc.IptcReader;
+import com.drew.metadata.jfif.JfifReader;
+import gallery.FXMLDocumentController;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Obsidiam
  */
  public class ImageManager{
-     private ErrorLogger e = new ErrorLogger();   
-     private EnvVars env = new EnvVars();
+    private ErrorLogger e = new ErrorLogger();   
+    private EnvVars env = new EnvVars();
+    
     
 
     public BufferedImage readGif(String path) throws IOException{
@@ -198,5 +212,72 @@ import org.w3c.dom.NodeList;
             return null;
         }
     }
-        
-    }
+
+        public static class ImageProperties {
+            private Object[] FORMATS = new Object[]{new ExifReader(), new IptcReader(),new JfifReader()};
+            private int selector = 0;
+            
+              private ArrayList<String> out = new ArrayList<>();
+              private Iterable readers = null;
+
+              public ArrayList<String> getInformation() throws IOException{
+                  return out;
+              }
+
+              private void createMetadataFormatList(Object[] formats){
+                   readers = Arrays.asList(formats);
+              }
+
+              public void handleFileData(File file) throws JpegProcessingException, IOException{
+                    createMetadataFormatList(FORMATS);
+                    if(file.isFile()){
+                        Metadata metadata = readMetdataFor(file);
+                        setToArray(metadata);
+                    }
+              }
+
+              public void setToArray(Metadata metadata){   
+                for (Directory directory : metadata.getDirectories()) {
+                    directory.getTags().forEach((tag) -> {
+                        if (!directory.hasErrors()) {
+                            out.add(tag.getTagName()+" "+tag.getDescription());
+                            System.out.println(tag.toString());
+                        }
+                    });
+                }
+              }
+
+                public Metadata readMetdataFor(File f) throws JpegProcessingException {
+                  Metadata m = null;
+                  try {
+                      String mime = Files.probeContentType(f.toPath());
+                      System.out.println(mime);
+                      switch(mime){
+                          case "image/jpeg":
+                              m = JpegMetadataReader.readMetadata(f,readers);
+                              break;
+                          case "image/png":
+                              m = PngMetadataReader.readMetadata(f);
+                              break;
+                          case "image/gif":
+                              m = GifMetadataReader.readMetadata(f);
+                              break;
+                          case "image/bmp":
+                              m = BmpMetadataReader.readMetadata(f);
+                              break;
+                      }
+                  } catch (IOException | PngProcessingException ex) {
+                      Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
+                  }
+                  return m;
+                }
+                
+                public static ImageProperties getOuter() {
+                        return new ImageProperties();
+                }
+                public Object[] getAllAccessibleFormats(){
+                    return FORMATS;
+                }
+       }
+    
+ }
