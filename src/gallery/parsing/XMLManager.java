@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package gallery.xml;
+package gallery.parsing;
 
 import gallery.enums.Environment;
 import gallery.systemproperties.EnvVars;

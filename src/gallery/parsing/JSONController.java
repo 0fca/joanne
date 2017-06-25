@@ -14,10 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package gallery.xml;
+package gallery.parsing;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import gallery.enums.Environment;
 import gallery.systemproperties.EnvVars;
 import java.io.BufferedReader;
@@ -36,6 +39,7 @@ import java.util.ArrayList;
 public class JSONController {
     private static volatile JSONController JSON;
     private static EnvVars ENV = new EnvVars();
+    static BufferedReader br = null;
     
     public static synchronized JSONController getInstance(){
         if(JSON == null){
@@ -44,23 +48,34 @@ public class JSONController {
         return JSON;
     } 
     
-    public void writeJson(ArrayList<String> params) throws IOException{
+    public void writeJson(ArrayList<SyncDataWrapper> sync,int fileCount) throws IOException{
         BufferedWriter writer = new BufferedWriter(new FileWriter(ENV.getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"sync_data.json"));
-
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        params.forEach((param) -> {
-            gson.toJson(param, writer);
-        });
+        gson.toJson(fileCount,writer);
+        gson.toJson(sync, writer);
         writer.close();
     }
     
-    public static String readJson() throws FileNotFoundException{
-        BufferedReader br = new BufferedReader(new FileReader(ENV.getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"sync_data.json"));
+    public SyncDataWrapper[] readArray() throws FileNotFoundException{
+        br = new BufferedReader(new FileReader(ENV.getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"sync_data.json"));
         Gson gson = new Gson(); 
-        return gson.fromJson(br,String.class);
+        SyncDataWrapper[] wrapper = gson.fromJson(br, SyncDataWrapper[].class);
+        return wrapper;
     }
     
-    public static void main(String[] args) throws FileNotFoundException{
-        System.out.println(readJson());
+    public String readString(String field) throws FileNotFoundException{
+        br = new BufferedReader(new FileReader(ENV.getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"sync_data.json"));
+        JsonArray entries = (JsonArray) new JsonParser().parse(br);
+        return ((JsonObject)entries.get(0)).get(field).toString();
+    }
+    
+    public int readInt32(String field) throws FileNotFoundException{
+        br = new BufferedReader(new FileReader(ENV.getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"sync_data.json"));
+        JsonArray entries = (JsonArray) new JsonParser().parse(br);
+        return ((JsonObject)entries.get(0)).get(field).getAsInt();
+    }
+    
+    public static void main(String[] args) throws FileNotFoundException, IOException{
+        //writeJson();
     }
 }

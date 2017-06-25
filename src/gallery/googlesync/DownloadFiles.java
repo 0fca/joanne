@@ -10,7 +10,8 @@ import com.google.api.services.drive.Drive;
 import gallery.enums.Environment;
 import static gallery.googlesync.Authorization.getDriveService;
 import gallery.systemproperties.EnvVars;
-import gallery.xml.JSONController;
+import gallery.parsing.JSONController;
+import gallery.parsing.SyncDataWrapper;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -42,26 +43,26 @@ public class DownloadFiles {
         Authorization.listFiles();
         ArrayList<String> ids = Authorization.getFilesIds();
         ArrayList<String> names = Authorization.getFilesList();
-        ArrayList<String> records = new ArrayList<>();
+        ArrayList<SyncDataWrapper> records = new ArrayList<>();
         Date d = new Date();
         long l_date = d.getTime();
- 
-        records.add(String.valueOf(l_date));
-        
+        SyncDataWrapper wrapper = new SyncDataWrapper();
+        wrapper.setFileModifDate(l_date);
         ids.forEach(fileId ->{
-            
+            wrapper.setFileId(Integer.parseInt(fileId));
             File out_dir = new File(ENV.getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"google_drive"+File.separator+names.get(ids.indexOf(fileId)));
             try {
                 fs = new FileOutputStream(out_dir);
                 driveService.files().get(fileId)
                 .executeMediaAndDownloadTo(fs);
-                
-                records.add(fileId);
+                wrapper.setFileName(out_dir.getName());
             } catch (IOException ex) {
                 Logger.getLogger(DownloadFiles.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
-        JSONController.getInstance().writeJson(records);
+        
+        records.add(wrapper);
+        JSONController.getInstance().writeJson(records,ids.size());
         
     }
     

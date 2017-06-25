@@ -13,7 +13,7 @@ import gallery.googlesync.Authorization;
 import gallery.googlesync.DownloadFiles;
 import gallery.image.ImageManager;
 import gallery.systemproperties.EnvVars;
-import gallery.xml.XMLManager;
+import gallery.parsing.XMLManager;
 import java.awt.AWTException;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
@@ -956,10 +956,11 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         items_count.setText(String.valueOf(images.size()));
     }
     
-    public void listFromGoogleTable(){
+    public void listFromGoogleTable() throws IOException{
        images.clear();
-       google_files.forEach(image ->{
-           images.add(ENV.getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"google_drive"+File.separator+image);
+       String gd_dir = ENV.getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"google_drive";
+       Files.list(new File(gd_dir).toPath()).forEach(image ->{
+           images.add(gd_dir+File.separator+image);
        });
     }
     
@@ -1119,11 +1120,13 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             });
             dialog.getDialogPane().setContent(vbox);
 
-
-            // Convert the result to a username-password-pair when the login button is clicked.
             dialog.setResultConverter(dialogButton -> {
                 if (dialogButton == loginButtonType) {
-                    model_man.listFromGoogleTable();
+                    try {
+                        model_man.listFromGoogleTable();
+                    } catch (IOException ex) {
+                        Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     return images;
                 }
                 return null;
@@ -1313,12 +1316,12 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                       System.out.println("GC.");
                       System.out.println(free+" MB");
                       System.out.println(tot+" MB");
-                  }
-                  try {
-                      Thread.sleep(5000);
-                  } catch (InterruptedException ex) {
-                      Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
-                  }
+                      try {
+                          Thread.sleep(5000);
+                      } catch (InterruptedException ex) {
+                          Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
+                      }
+                  } 
               }
           }
       }

@@ -7,7 +7,7 @@ package gallery;
 
 import gallery.enums.Environment;
 import gallery.systemproperties.EnvVars;
-import gallery.xml.XMLManager;
+import gallery.parsing.XMLManager;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;

@@ -20,7 +20,7 @@ import com.google.api.services.drive.model.*;
 import com.google.api.services.drive.Drive;
 import gallery.enums.Environment;
 import gallery.systemproperties.EnvVars;
-import gallery.xml.JSONController;
+import gallery.parsing.JSONController;
 
 import java.io.IOException;
 import java.io.InputStream;
