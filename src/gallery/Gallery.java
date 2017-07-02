@@ -47,6 +47,7 @@ public class Gallery extends Application {
         stage.setScene(scene);
         stage.setTitle("Joanne");
         stage.show();
+
         this.stage = stage;
         if(new File(new EnvVars().getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"google_drive").exists()){        
             System.out.println(Files.createDirectories(Paths.get(new EnvVars().getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"google_drive")));

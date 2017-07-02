@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -95,6 +94,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import gallery.image.ImageManager.ImageProperties;
+import gallery.parsing.JSONController;
 import java.awt.image.BufferedImage;
 import java.nio.file.Paths;
 import javax.imageio.ImageIO;
@@ -158,6 +158,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     EnvVars ENV = new EnvVars();
     private boolean isAuthorized = false;
     private String nick = "";
+    private JSONController PARSER = JSONController.getInstance();
     
     {
         Runtime r = Runtime.getRuntime();
@@ -172,8 +173,8 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             fw = new FileWriter(new File("debug"));
        
         BufferedWriter bw = new BufferedWriter(fw);
-     
-                   
+
+        
         bw.append("Initializing...");
         bw.newLine();
 
@@ -187,7 +188,9 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         bw.newLine();
         GCRunner run = new GCRunner();
         run.start();
-        
+
+
+
         try {
             paths = XML.getFolderList();
             paths.forEach(item ->{
@@ -221,7 +224,8 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             rot_arc -= 90.0;
             model_man.rotate();
         });
-        
+
+
         image_list.setOnMouseClicked((event) ->{
             if(event.getButton() == MouseButton.SECONDARY){
                 selection = image_list.getSelectionModel().getSelectedIndex();
@@ -820,6 +824,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     }  
       
     private void accessGoogleDrive(String nick,String operation) throws IOException{
+        
         if(!isAuthorized){
             Authorization.authorize();
             Authorization.setNick(nick);
@@ -827,6 +832,8 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         
         switch(operation){
             case "download":
+                PARSER.readArray();
+                
                 DownloadFiles.getInstance().downloadFiles();
                 google_files = Authorization.getFilesList();
                 model_man.listFromGoogleTable();
@@ -873,6 +880,8 @@ public class FXMLDocumentController extends Gallery implements Initializable {
             FileInputStream in; 
             Properties p = new Properties();
             System.out.println(ACTUAL_SELECTED);
+            
+            
             if(Files.exists(new File(new EnvVars().getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"favorites.xml").toPath())){
                 in = new FileInputStream(new File(new EnvVars().getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"favorites.xml"));
                 p.loadFromXML(in);
@@ -941,13 +950,8 @@ public class FXMLDocumentController extends Gallery implements Initializable {
     private void listFromTable(){
         ObservableList p = FXCollections.observableArrayList();
         images.clear();
-        sorted.forEach(event ->{
-            images.add(event);
-        });
-        
-        images.forEach(event ->{
-            p.add(event);
-        });
+        images.addAll(sorted);
+        p.addAll(images);
         sorted.clear();
         image_list.setCellFactory(new CallbackImpl());
         image_list.getItems().clear();
@@ -968,6 +972,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
          try {
             if(!dir.isEmpty()){
                     Stream<Path> list = Files.list(new File(dir).toPath());
+                    
                     ObservableList<String> o = FXCollections.observableArrayList();
                     image_list.getItems().clear();
                     images.clear();
@@ -1280,7 +1285,7 @@ public class FXMLDocumentController extends Gallery implements Initializable {
                 }
                }catch(IOException e){
                }
-}
+            }
         }
     }
 
@@ -1291,8 +1296,6 @@ public class FXMLDocumentController extends Gallery implements Initializable {
         }
     }
     
-   
-  
   public class GCRunner extends Thread implements Runnable{
       private Thread TH;
       @Override

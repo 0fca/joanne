@@ -48,18 +48,17 @@ public class JSONController {
         return JSON;
     } 
     
-    public void writeJson(ArrayList<SyncDataWrapper> sync,int fileCount) throws IOException{
+    public void writeJson(ArrayList<FileDataWrapper> sync,int fileCount) throws IOException{
         BufferedWriter writer = new BufferedWriter(new FileWriter(ENV.getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"sync_data.json"));
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        gson.toJson(fileCount,writer);
-        gson.toJson(sync, writer);
+        gson.toJson(sync, writer);       
         writer.close();
     }
     
-    public SyncDataWrapper[] readArray() throws FileNotFoundException{
+    public FileDataWrapper[] readArray() throws FileNotFoundException{
         br = new BufferedReader(new FileReader(ENV.getEnvironmentVariable(Environment.USER_HOME)+File.separator+"joanne"+File.separator+"sync_data.json"));
         Gson gson = new Gson(); 
-        SyncDataWrapper[] wrapper = gson.fromJson(br, SyncDataWrapper[].class);
+        FileDataWrapper[] wrapper = gson.fromJson(br, FileDataWrapper[].class);
         return wrapper;
     }
     
@@ -75,7 +74,24 @@ public class JSONController {
         return ((JsonObject)entries.get(0)).get(field).getAsInt();
     }
     
-    public static void main(String[] args) throws FileNotFoundException, IOException{
-        //writeJson();
+   
+    /**
+     * Left for testing perpouses, NOT an entry point!.
+     * 
+     */
+    @Deprecated
+    private static void main(String[] args) throws FileNotFoundException, IOException{
+//        ArrayList<FileDataWrapper> sync = new ArrayList<>();
+//        SyncDataWrapper s = new SyncDataWrapper();
+//        s.setFileId(1);
+//        s.setFileModifDate(1234566778L);
+//        s.setFileName("File1");
+//        SyncDataWrapper s2 = new SyncDataWrapper();
+//        s2.setFileId(2);
+//        s2.setFileModifDate(1234567890L);
+//        s2.setFileName("File2");
+//        sync.add(s);
+//        sync.add(s2);
+        //writeJson(sync,sync.size());
     }
 }
